@@ -96,20 +96,22 @@ form button:hover {
     background-color: #6e533f;
 }
 
-.perro-item {
+/* Estilo para las tarjetas del directorio (tipo perfil de red social) */
+.perfil-card-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     background: #faf6f0;
-    padding: 0.8rem;
-    margin-bottom: 0.8rem;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.6rem;
     border-radius: 8px;
     border-left: 4px solid #4a3319;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
-.detalles-perro {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px dashed #d4c3b3;
-    font-size: 0.9rem;
-    color: #5c4033;
+.perfil-card-item:hover {
+    background: #f0e6dc;
 }
 
 .servicios-lista {
@@ -120,4 +122,13 @@ form button:hover {
 .servicios-lista li {
     padding: 0.4rem 0;
     border-bottom: 1px dashed #eee;
+}
+
+.reporte-item {
+    background: #f9f6f0;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    border-left: 3px solid #8c6d53;
+    font-size: 0.9rem;
 }
