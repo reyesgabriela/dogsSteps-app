@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ⚠️ REEMPLAZA ESTE NÚMERO CON TU WHATSAPP (Ej: 50370000000)
-    const TU_NUMERO_WHATSAPP = "50300000000"; 
+    const TU_NUMERO_WHATSAPP = "50373484771"; 
     
     // Contraseña protegida para el panel de paseador
     const PASSWORD_ADMIN = "1234";
