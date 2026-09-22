@@ -10,79 +10,116 @@
 <body>
 
     <header>
-        <h1>🐾 Dog's Step's</h1>
+        <h1 id="titulo-app" style="cursor: pointer;">🐾 Dog's Step's</h1>
         <p>Paseo • Cuidado • Bienestar</p>
     </header>
 
     <main>
-        <!-- Sección de Servicios y Precios -->
-        <section class="card">
-            <h2>Nuestros Servicios</h2>
-            <ul class="servicios-lista">
-                <li>⏱️ <strong>Paseo 30 min (1 perro):</strong> $6</li>
-                <li>⏱️ <strong>Paseo 45 min (1 perro):</strong> $8</li>
-                <li>⏱️ <strong>Paseo 60 min (1 perro):</strong> $10</li>
-                <li>🐾 <strong>Segundo perro (misma familia):</strong> +$3</li>
-                <li>⭐ <strong>Primer paseo (30 min):</strong> ¡Oferta $4!</li>
-            </ul>
-        </section>
+        <!-- VISTA 1: INICIO / DIRECTORIO Y RESERVAS -->
+        <div id="vista-inicio">
+            <!-- Sección de Servicios y Precios -->
+            <section class="card">
+                <h2>Nuestros Servicios</h2>
+                <ul class="servicios-lista">
+                    <li>⏱️ <strong>Paseo 30 min (1 perro):</strong> $6</li>
+                    <li>⏱️ <strong>Paseo 45 min (1 perro):</strong> $8</li>
+                    <li>⏱️ <strong>Paseo 60 min (1 perro):</strong> $10</li>
+                    <li>🐾 <strong>Segundo perro (misma familia):</strong> +$3</li>
+                    <li>⭐ <strong>Primer paseo (30 min):</strong> ¡Oferta $4!</li>
+                </ul>
+            </section>
 
-        <!-- Sección de Perfiles Caninos con Opción de Agregar -->
-        <section class="card">
-            <h2>Perfiles de Perritos</h2>
-            <button id="btn-mostrar-form-perro" class="btn-secundario">➕ Registrar Nuevo Perrito</button>
-            
-            <!-- Formulario oculto para registrar perro -->
-            <form id="form-nuevo-perro" style="display: none; margin-top: 1rem; background: #fdfbf7; padding: 1rem; border-radius: 8px;">
-                <h3>Nuevo Perfil Canino</h3>
-                <label for="nuevo-nombre">Nombre del Perro:</label>
-                <input type="text" id="nuevo-nombre" required>
+            <!-- Directorio de Perfiles (Tipo Red Social) -->
+            <section class="card">
+                <h2>Perfiles Caninos</h2>
+                <input type="text" id="buscador-perros" placeholder="🔍 Buscar perrito por nombre..." style="margin-bottom: 0.8rem;">
+                <div id="directorio-perritos">
+                    <!-- Se llena con JavaScript -->
+                </div>
+            </section>
 
-                <label for="nuevo-raza">Raza:</label>
-                <input type="text" id="nuevo-raza" required>
+            <!-- Sección de Reservas -->
+            <section class="card">
+                <h2>Agendar un Paseo</h2>
+                <form id="form-reserva">
+                    <label for="dueno">Tu Nombre (Dueño):</label>
+                    <input type="text" id="dueno" placeholder="Ej. María Pérez" required>
 
-                <label for="nuevo-edad">Edad:</label>
-                <input type="text" id="nuevo-edad" placeholder="Ej. 2 años" required>
+                    <label for="perro-select">Selecciona tu Perrito:</label>
+                    <select id="perro-select" required>
+                        <!-- Se llena dinámicamente -->
+                    </select>
 
-                <label for="nuevo-direccion">Dirección de Recolección:</label>
-                <input type="text" id="nuevo-direccion" placeholder="Ej. Col. Escalón, Casa #12" required>
+                    <label for="servicio">Tipo de Servicio:</label>
+                    <select id="servicio" required>
+                        <option value="30 min - $6">Paseo 30 minutos ($6)</option>
+                        <option value="45 min - $8">Paseo 45 minutos ($8)</option>
+                        <option value="60 min - $10">Paseo 60 minutos ($10)</option>
+                    </select>
 
-                <label for="nuevo-notas">Necesidades Especiales / Notas:</label>
-                <input type="text" id="nuevo-notas" placeholder="Ej. Ansioso con otros perros" required>
+                    <label for="fecha">Fecha y Hora:</label>
+                    <input type="datetime-local" id="fecha" required>
 
-                <button type="submit" style="margin-top: 0.8rem;">Guardar Perrito</button>
-            </form>
+                    <button type="submit">Reservar Paseo</button>
+                </form>
+            </section>
 
-            <div id="lista-perritos" style="margin-top: 1rem;">
-                <!-- Se llena con JavaScript -->
+            <!-- Acceso a Modo Administrador (Tú) -->
+            <div style="text-align: center; margin-top: 2rem; margin-bottom: 1rem;">
+                <button id="btn-ir-admin" class="btn-secundario" style="background: #a67c52; font-size: 0.85rem; width: auto; padding: 0.5rem 1rem;">🔒 Acceso Paseador / Admin</button>
             </div>
-        </section>
+        </div>
 
-        <!-- Sección de Reservas -->
-        <section class="card">
-            <h2>Agendar un Paseo</h2>
-            <form id="form-reserva">
-                <label for="dueno">Tu Nombre (Dueño):</label>
-                <input type="text" id="dueno" placeholder="Ej. María Pérez" required>
+        <!-- VISTA 2: PERFIL INDIVIDUAL DEL PERRITO (TIPO FACEBOOK) -->
+        <div id="vista-perfil" style="display: none;">
+            <button id="btn-volver-inicio" class="btn-secundario" style="margin-bottom: 1rem;">← Volver al Inicio</button>
+            <section class="card" id="tarjeta-perfil-detalle">
+                <!-- Se inyecta dinámicamente la info y reportes del perro -->
+            </section>
+        </div>
 
-                <label for="perro-select">Selecciona tu Perrito:</label>
-                <select id="perro-select" required>
-                    <!-- Se llena dinámicamente -->
-                </select>
+        <!-- VISTA 3: PANEL DE ADMINISTRACIÓN (SOLO PARA TI) -->
+        <div id="vista-admin" style="display: none;">
+            <button id="btn-salir-admin" class="btn-secundario" style="margin-bottom: 1rem;">← Salir del Panel</button>
+            
+            <section class="card">
+                <h2>🔒 Panel de Control (Paseador)</h2>
+                
+                <!-- Formulario para Registrar Nuevo Perro -->
+                <form id="form-nuevo-perro" style="background: #fdfbf7; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #d4c3b3;">
+                    <h3 style="color: #4a3319; margin-top:0;">Registrar Nuevo Perrito</h3>
+                    <label for="nuevo-nombre">Nombre:</label>
+                    <input type="text" id="nuevo-nombre" required>
 
-                <label for="servicio">Tipo de Servicio:</label>
-                <select id="servicio" required>
-                    <option value="30 min - $6">Paseo 30 minutos ($6)</option>
-                    <option value="45 min - $8">Paseo 45 minutos ($8)</option>
-                    <option value="60 min - $10">Paseo 60 minutos ($10)</option>
-                </select>
+                    <label for="nuevo-raza">Raza:</label>
+                    <input type="text" id="nuevo-raza" required>
 
-                <label for="fecha">Fecha y Hora:</label>
-                <input type="datetime-local" id="fecha" required>
+                    <label for="nuevo-edad">Edad:</label>
+                    <input type="text" id="nuevo-edad" placeholder="Ej. 2 años" required>
 
-                <button type="submit">Reservar Paseo</button>
-            </form>
-        </section>
+                    <label for="nuevo-direccion">Dirección de Recolección:</label>
+                    <input type="text" id="nuevo-direccion" required>
+
+                    <label for="nuevo-notas">Necesidades Especiales:</label>
+                    <input type="text" id="nuevo-notas" required>
+
+                    <button type="submit" style="margin-top: 0.8rem;">Crear Perfil Oficial</button>
+                </form>
+
+                <!-- Formulario para Enviar Reporte de Paseo -->
+                <form id="form-nuevo-reporte" style="background: #fdfbf7; padding: 1rem; border-radius: 8px; border: 1px solid #d4c3b3;">
+                    <h3 style="color: #4a3319; margin-top:0;">Enviar Reporte de Paseo</h3>
+                    
+                    <label for="reporte-perro-select">Seleccionar Perrito:</label>
+                    <select id="reporte-perro-select" required></select>
+
+                    <label for="texto-reporte">Detalle del Reporte (Estado, fotos/notas, energía):</label>
+                    <textarea id="texto-reporte" rows="3" placeholder="Ej. ¡Paseo increíble! Hizo sus necesidades y se divirtió mucho en el parque." style="width: 100%; padding: 0.7rem; margin-top: 0.3rem; border: 1px solid #d4c3b3; border-radius: 8px; font-family: inherit; box-sizing: border-box;" required></textarea>
+
+                    <button type="submit" style="margin-top: 0.8rem; background-color: #2e7d32;">Publicar Reporte en su Perfil</button>
+                </form>
+            </section>
+        </div>
     </main>
 
     <script src="app.js"></script>
