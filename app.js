@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Clave secreta para acceder al panel de administración (puedes cambiarla cuando quieras)
+    // ⚠️ REEMPLAZA ESTE NÚMERO CON TU WHATSAPP (Ej: 50370000000)
+    const TU_NUMERO_WHATSAPP = "50300000000"; 
+    
+    // Contraseña protegida para el panel de paseador
     const PASSWORD_ADMIN = "1234";
 
     let perritos = JSON.parse(localStorage.getItem('dogs_perritos')) || [
@@ -18,14 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
             direccion: "Santa Elena, Polígono 4", 
             notas: "Olfatea demasiado, usar correa corta.",
             reportes: ["Paseo de 30 min realizado sin novedad. 🐾"]
-        },
-        { 
-            nombre: "Kaiser", 
-            raza: "Pastor Alemán", 
-            edad: "4 años", 
-            direccion: "Antiguo Cuscatlán, Res. El Encanto", 
-            notas: "Tranquilo pero prefiere caminar solo.",
-            reportes: ["Paseo de 60 min completado excelente. ⭐"]
         }
     ];
 
@@ -81,13 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         perritosFiltrados.forEach((p) => {
-            // Llenar selector de reservas en inicio
             const option = document.createElement('option');
             option.value = p.nombre;
             option.textContent = `${p.nombre} (${p.raza})`;
             selectPerritoReserva.appendChild(option);
 
-            // Crear tarjeta estilo perfil de red social
             const div = document.createElement('div');
             div.className = 'perfil-card-item';
             div.innerHTML = `
@@ -98,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span style="color: #4a3319; font-weight: bold; font-size: 0.9rem;">Ver Perfil →</span>
             `;
 
-            // Al hacer clic, abre la vista de perfil individual
             div.addEventListener('click', () => {
                 abrirPerfilIndividual(p);
             });
@@ -109,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
     }
 
-    // Mostrar perfil individual detallado tipo Facebook
+    // Mostrar perfil individual detallado
     function abrirPerfilIndividual(p) {
         vistaInicio.style.display = 'none';
         vistaPerfil.style.display = 'block';
@@ -132,9 +124,26 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // Buscador en tiempo real
     buscador.addEventListener('input', (e) => {
         actualizarDirectorio(e.target.value);
+    });
+
+    // Permitir que los clientes registren a su perrito libremente
+    document.getElementById('form-cliente-perro').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nuevoPerro = {
+            nombre: document.getElementById('c-nombre').value,
+            raza: document.getElementById('c-raza').value,
+            edad: document.getElementById('c-edad').value,
+            direccion: document.getElementById('c-direccion').value,
+            notas: document.getElementById('c-notas').value,
+            reportes: ["¡Perfil registrado exitosamente en Dog's Step's! 🎉"]
+        };
+
+        perritos.push(nuevoPerro);
+        actualizarDirectorio();
+        document.getElementById('form-cliente-perro').reset();
+        alert('¡Tu perrito ha sido registrado con éxito en Dog\'s Step\'s!');
     });
 
     // Actualizar selectores del panel de administración
@@ -148,26 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Registrar nuevo perrito (Desde el Admin)
-    document.getElementById('form-nuevo-perro').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const nuevoPerro = {
-            nombre: document.getElementById('nuevo-nombre').value,
-            raza: document.getElementById('nuevo-raza').value,
-            edad: document.getElementById('nuevo-edad').value,
-            direccion: document.getElementById('nuevo-direccion').value,
-            notas: document.getElementById('nuevo-notas').value,
-            reportes: ["¡Perfil oficial creado en Dog's Step's! 🎉"]
-        };
-
-        perritos.push(nuevoPerro);
-        actualizarDirectorio();
-        document.getElementById('form-nuevo-perro').reset();
-        alert('¡Perrito registrado exitosamente!');
-        mostrarInicio();
-    });
-
-    // Enviar Reporte Oficial (Desde el Admin)
+    // Enviar Reporte Oficial (Desde el Admin protegido)
     document.getElementById('form-nuevo-reporte').addEventListener('submit', (e) => {
         e.preventDefault();
         const nombrePerro = selectPerritoReporte.value;
@@ -184,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Manejo de reservas de clientes
+    // Manejo de reservas de clientes con notificación automática a WhatsApp
     document.getElementById('form-reserva').addEventListener('submit', (e) => {
         e.preventDefault();
         const dueno = document.getElementById('dueno').value;
@@ -193,17 +183,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const fecha = document.getElementById('fecha').value;
 
         if(fecha) {
+            const fechaFormateada = fecha.replace('T', ' a las ');
+            
             const perroEncontrado = perritos.find(p => p.nombre === perroNombre);
             if(perroEncontrado) {
-                perroEncontrado.reportes.push(`📅 Paseo agendado (${servicio}) para el ${fecha.replace('T', ' a las ')} por ${dueno}.`);
+                perroEncontrado.reportes.push(`📅 Paseo agendado (${servicio}) para el ${fechaFormateada} por ${dueno}.`);
                 localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
             }
-            alert(`¡Gracias ${dueno}! Paseo agendado con éxito para ${perroNombre} (${servicio}). 🐾`);
+
+            // Construir el mensaje de WhatsApp para ti
+            const mensajeWp = `¡Hola Dog's Step's! 🐾 Tengo una nueva reserva:%0A%0A👤 *Dueño:* ${dueno}%0A🐕 *Perrito:* ${perroNombre}%0A📋 *Servicio:* ${servicio}%0A📅 *Fecha y hora:* ${fechaFormateada}`;
+            
+            // Abrir WhatsApp automáticamente con la alerta
+            window.open(`https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensajeWp}`, '_blank');
+
+            alert(`¡Gracias ${dueno}! Paseo agendado con éxito para ${perroNombre}. Redirigiendo a WhatsApp para notificar a la paseadora... 🐾`);
             document.getElementById('form-reserva').reset();
             actualizarDirectorio();
         }
     });
 
-    // Carga inicial
     actualizarDirectorio();
 });
