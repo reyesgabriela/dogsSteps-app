@@ -7,7 +7,7 @@ body {
 }
 
 header {
-    background-color: #4a3319; /* Tono café de tu marca */
+    background-color: #4a3319;
     color: #f3efe6;
     padding: 1.2rem;
     text-align: center;
@@ -81,14 +81,35 @@ form button:hover {
     background-color: #332210;
 }
 
-ul {
-    padding-left: 1.2rem;
-    margin: 0;
+.btn-secundario {
+    background-color: #8c6d53;
+    color: white;
+    border: none;
+    padding: 0.6rem;
+    border-radius: 8px;
+    font-weight: bold;
+    width: 100%;
+    cursor: pointer;
 }
 
-li {
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
+.btn-secundario:hover {
+    background-color: #6e533f;
+}
+
+.perro-item {
+    background: #faf6f0;
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+    border-radius: 8px;
+    border-left: 4px solid #4a3319;
+}
+
+.detalles-perro {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed #d4c3b3;
+    font-size: 0.9rem;
+    color: #5c4033;
 }
 
 .servicios-lista {
