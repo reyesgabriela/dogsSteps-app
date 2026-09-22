@@ -6,19 +6,22 @@ body {
     padding: 0;
 }
 
-header {
+.header-principal {
     background-color: #4a3319;
     color: #f3efe6;
-    padding: 1.2rem;
+    padding: 1rem;
     text-align: center;
 }
 
-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
+.logo-img {
+    max-width: 150px;
+    height: auto;
+    cursor: pointer;
+    border-radius: 8px;
+    display: inline-block;
 }
 
-header p {
+.header-principal p {
     margin: 0.3rem 0 0 0;
     font-size: 0.85rem;
     letter-spacing: 1px;
@@ -96,7 +99,6 @@ form button:hover {
     background-color: #6e533f;
 }
 
-/* Estilo para las tarjetas del directorio (tipo perfil de red social) */
 .perfil-card-item {
     display: flex;
     align-items: center;
