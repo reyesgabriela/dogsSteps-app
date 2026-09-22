@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog's Step's - Paseo, Cuidado y Bienestar</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+
+    <header>
+        <h1>🐾 Dog's Step's</h1>
+        <p>Paseo • Cuidado • Bienestar</p>
+    </header>
+
+    <main>
+        <!-- Sección de Servicios y Precios -->
+        <section class="card">
+            <h2>Nuestros Servicios</h2>
+            <ul class="servicios-lista">
+                <li>⏱️ <strong>Paseo 30 min (1 perro):</strong> $6</li>
+                <li>⏱️ <strong>Paseo 45 min (1 perro):</strong> $8</li>
+                <li>⏱️ <strong>Paseo 60 min (1 perro):</strong> $10</li>
+                <li>🐾 <strong>Segundo perro (misma familia):</strong> +$3</li>
+                <li>⭐ <strong>Primer paseo (30 min):</strong> ¡Oferta $4!</li>
+            </ul>
+        </section>
+
+        <!-- Sección de Perfiles Caninos / Control -->
+        <section class="card">
+            <h2>Perfiles de Perritos</h2>
+            <div id="lista-perritos">
+                <!-- Se llena con JavaScript -->
+            </div>
+        </section>
+
+        <!-- Sección de Reservas -->
+        <section class="card">
+            <h2>Agendar un Paseo</h2>
+            <form id="form-reserva">
+                <label for="dueno">Tu Nombre (Dueño):</label>
+                <input type="text" id="dueno" placeholder="Ej. María Pérez" required>
+
+                <label for="perro">Selecciona tu Perrito:</label>
+                <select id="perro" required>
+                    <option value="Max">Max (Golden Retriever)</option>
+                    <option value="Luna">Luna (Beagle)</option>
+                    <option value="Kaiser">Kaiser (Pastor Alemán)</option>
+                </select>
+
+                <label for="servicio">Tipo de Servicio:</label>
+                <select id="servicio" required>
+                    <option value="30 min - $6">Paseo 30 minutos ($6)</option>
+                    <option value="45 min - $8">Paseo 45 minutos ($8)</option>
+                    <option value="60 min - $10">Paseo 60 minutos ($10)</option>
+                </select>
+
+                <label for="fecha">Fecha y Hora:</label>
+                <input type="datetime-local" id="fecha" required>
+
+                <button type="submit">Reservar Paseo</button>
+            </form>
+        </section>
+
+        <!-- Historial de reportes -->
+        <section class="card">
+            <h2>Últimos Reportes</h2>
+            <ul id="lista-reportes">
+                <li><strong>Max:</strong> Paseo de 45 min completado con éxito. ¡Todo excelente! 🐕❤️</li>
+            </ul>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
