@@ -1,8 +1,6 @@
-// Importar Firebase SDK desde los servidores oficiales de Google (CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Tu configuración de Firebase obtenida de la consola
 const firebaseConfig = {
     apiKey: "AIzaSyCuXyJ_HdMbortpE5w1ZTyR8DbVi5CXWtY",
     authDomain: "dogs-steps.firebaseapp.com",
@@ -12,9 +10,28 @@ const firebaseConfig = {
     appId: "1:218797965541:web:98998455ea54983ba4d40c"
 };
 
-// Inicializar Firebase y Firestore
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// Función ligera para comprimir solo fotos pequeñas de perfil de perrito
+function comprimirFotoPerfil(file, callback) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function(event) {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 250;
+            const scaleSize = MAX_WIDTH / img.width;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleSize;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            callback(canvas.toDataURL('image/jpeg', 0.6));
+        }
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const TU_NUMERO_WHATSAPP = "50373484771"; 
@@ -122,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // VISTA DE PERFIL INDIVIDUAL CON CITAS PRÓXIMAS, PASADAS Y REPORTES
     function abrirPerfilIndividual(p) {
         vistaInicio.style.display = 'none';
         vistaPerfil.style.display = 'block';
@@ -131,34 +149,36 @@ document.addEventListener('DOMContentLoaded', () => {
             `<img src="${p.fotoPerfil}" class="avatar-perfil-grande">` : 
             `<div style="font-size: 3.5rem; background: #faf6f0; width: 90px; height: 90px; line-height: 90px; border-radius: 50%; margin: 0 auto 0.5rem auto; border: 3px solid #4a3319; text-align: center;">🐕</div>`;
 
-        let htmlReportes = '';
-        if (p.reportes && p.reportes.length > 0) {
-            htmlReportes = p.reportes.map((r, index) => {
-                let mediaTag = '';
-                if (r.media) {
-                    if (r.tipoMedia === 'video') {
-                        mediaTag = `
-                            <video src="${r.media}" controls class="reporte-video"></video>
-                            <a href="${r.media}" download="video_paseo_${p.nombre}_${index}.mp4" class="btn-descarga">📥 Descargar Video</a>
-                            <span class="aviso-temporal">⏳ Archivo temporal: Este video caduca y se elimina en 24 horas.</span>
-                        `;
-                    } else {
-                        mediaTag = `
-                            <img src="${r.media}" class="reporte-img">
-                            <a href="${r.media}" download="foto_paseo_${p.nombre}_${index}.jpg" class="btn-descarga">📥 Descargar Foto</a>
-                            <span class="aviso-temporal">⏳ Archivo temporal: Esta foto caduca y se elimina en 24 horas.</span>
-                        `;
-                    }
+        // Procesar citas y reportes
+        let citasProximasHtml = '';
+        let historialCitasHtml = '';
+        let reportesHtml = '';
+
+        const ahora = new Date();
+
+        if (p.citas && p.citas.length > 0) {
+            p.citas.forEach(cita => {
+                const fechaCitaObj = new Date(cita.fechaOriginal || cita.fecha);
+                const itemCita = `<div style="background: #faf6f0; padding: 0.6rem; border-radius: 6px; margin-bottom: 0.4rem; border-left: 4px solid #a67c52;">📅 <strong>${cita.servicio}</strong> (${cita.numPerros} perritos)<br>🕒 <strong>Fecha:</strong> ${cita.fecha}</div>`;
+                
+                if (fechaCitaObj >= ahora) {
+                    citasProximasHtml += itemCita;
+                } else {
+                    historialCitasHtml += itemCita;
                 }
-                return `
-                    <div class="reporte-item">
-                        📝 ${r.texto}
-                        ${mediaTag}
-                    </div>
-                `;
-            }).join('');
+            });
+        }
+        if (!citasProximasHtml) citasProximasHtml = '<p style="color: #776050; font-size: 0.9rem;">No hay citas próximas programadas.</p>';
+        if (!historialCitasHtml) historialCitasHtml = '<p style="color: #776050; font-size: 0.9rem;">No hay historial de citas anteriores.</p>';
+
+        if (p.reportes && p.reportes.length > 0) {
+            reportesHtml = p.reportes.map(r => `
+                <div class="reporte-item" style="background: #fff; padding: 0.7rem; border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid #d4c3b3;">
+                    📝 ${r.texto}
+                </div>
+            `).join('');
         } else {
-            htmlReportes = '<p style="color: #776050;">Aún no hay reportes registrados.</p>';
+            reportesHtml = '<p style="color: #776050; font-size: 0.9rem;">Aún no hay reportes registrados.</p>';
         }
 
         tarjetaPerfilDetalle.innerHTML = `
@@ -173,10 +193,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p style="margin: 0.3rem 0;">📍 <strong>Dirección:</strong> ${p.direccion}</p>
                 <p style="margin: 0.3rem 0;">⚠️ <strong>Notas:</strong> ${p.notas}</p>
             </div>
-            <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem;">Historial de Reportes y Facturas</h3>
-            <div style="margin-top: 0.8rem;">
-                ${htmlReportes}
-            </div>
+
+            <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-top: 1.2rem;">✨ Citas Próximas</h3>
+            <div style="margin-top: 0.5rem; margin-bottom: 1rem;">${citasProximasHtml}</div>
+
+            <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-top: 1.2rem;">📋 Historial de Citas Pasadas</h3>
+            <div style="margin-top: 0.5rem; margin-bottom: 1rem;">${historialCitasHtml}</div>
+
+            <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-top: 1.2rem;">📸 Bitácora de Reportes</h3>
+            <div style="margin-top: 0.5rem;">${reportesHtml}</div>
         `;
     }
 
@@ -184,9 +209,9 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarDirectorio(e.target.value);
     });
 
-    // Registrar nuevo perrito directamente en Firebase
+    // Registrar nuevo perrito con foto de perfil comprimida
     const formClientePerro = document.getElementById('form-cliente-perro');
-    formClientePerro.addEventListener('submit', async function(e) {
+    formClientePerro.addEventListener('submit', function(e) {
         e.preventDefault();
         const inputFotoPerfil = document.getElementById('c-foto');
         const nombreIngresado = document.getElementById('c-nombre').value;
@@ -203,7 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 direccion: document.getElementById('c-direccion').value,
                 notas: document.getElementById('c-notas').value,
                 fotoPerfil: urlFotoPerfil,
-                reportes: [{ texto: `¡Perfil de ${nombreIngresado} registrado con éxito en ${familiaIngresada}! 🎉`, media: null, tipoMedia: null }],
+                citas: [],
+                reportes: [{ texto: `¡Perfil de ${nombreIngresado} registrado con éxito en ${familiaIngresada}! 🎉` }],
                 ultimaReserva: null
             };
 
@@ -214,16 +240,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 cargarPerritosDeNube();
             } catch (error) {
                 console.error("Error al guardar en Firebase:", error);
-                alert("Hubo un error al guardar el registro en la nube.");
+                alert("Hubo un error al guardar el registro.");
             }
         };
 
         if (inputFotoPerfil.files && inputFotoPerfil.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(uploadEvent) {
-                guardarEnNube(uploadEvent.target.result);
-            };
-            reader.readAsDataURL(inputFotoPerfil.files[0]);
+            comprimirFotoPerfil(inputFotoPerfil.files[0], (urlComprimida) => {
+                guardarEnNube(urlComprimida);
+            });
         } else {
             guardarEnNube(null);
         }
@@ -307,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("No hay número de contacto registrado.");
             return;
         }
-        const mensaje = `¡Hola! 🐾 Te escribimos de Dog's Step's para avisarte que *acabamos de iniciar* el paseo de ${nombrePerro}. ¡Todo listo y con la mejor energía! 🐕✨`;
+        const mensaje = `¡Hola! 🐾 Te escribimos de Dog's Step's para avisarte que *acabamos de iniciar* el paseo de ${nombrePerro}. ¡Todo listo y con la mejor energía! 🐕✨\n\n(Aquí te adjunto la foto o video del inicio de paseo 📸👇)`;
         window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensaje)}`, '_blank');
     };
 
@@ -318,11 +342,11 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("No hay número de contacto registrado.");
             return;
         }
-        const mensaje = `¡Hola! 🐾 Te escribimos de Dog's Step's para avisarte que *hemos finalizado con éxito* el paseo de ${nombrePerro}. ¡Ya está de vuelta en casa y descansando feliz! ❤️🏡`;
+        const mensaje = `¡Hola! 🐾 Te escribimos de Dog's Step's para avisarte que *hemos finalizado con éxito* el paseo de ${nombrePerro}. ¡Ya está de vuelta en casa y descansando feliz! ❤️🏡\n\n(Aquí te adjunto la foto del regreso 📸👇)`;
         window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensaje)}`, '_blank');
     };
 
-    // GENERAR FACTURA AUTOMÁTICA DESDE LA RESERVA (Con encodeURIComponent para emojis limpios)
+    // GENERAR FACTURA AUTOMÁTICA
     document.getElementById('btn-enviar-factura-auto').onclick = function() {
         const nombrePerro = selectAdminAlerta.value;
         const telCliente = inputAdminTelCliente.value.trim();
@@ -363,10 +387,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let familia = perroEncontrado ? (perroEncontrado.familia || "Familia") : "Familia";
 
         if(perroEncontrado) {
+            if (!perroEncontrado.reportes) perroEncontrado.reportes = [];
             perroEncontrado.reportes.push({
-                texto: `🧾 Factura automática enviada: ${servicioSelect} (${numPerros} perros) - Total: $${totalPagar}.`,
-                media: null,
-                tipoMedia: null
+                texto: `🧾 Factura enviada: ${servicioSelect} (${numPerros} perros) - Total: $${totalPagar}.`
             });
             updateDoc(doc(db, "perritos", perroEncontrado.id), { reportes: perroEncontrado.reportes });
         }
@@ -376,61 +399,40 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensajeWp)}`, '_blank');
     };
 
-    // PUBLICAR REPORTE (Actualiza en la nube de Firebase)
+    // PUBLICAR REPORTE Y ABRIR WHATSAPP PARA ADJUNTAR FOTO DIRECTAMENTE DESDE LA CÁMARA
     const formNuevoReporte = document.getElementById('form-nuevo-reporte');
     formNuevoReporte.addEventListener('submit', async function(e) {
         e.preventDefault();
         const nombrePerro = selectPerritoReporte.value;
         const texto = document.getElementById('texto-reporte').value;
-        const inputArchivo = document.getElementById('archivo-reporte');
         const fechaHoraActual = new Date().toLocaleString('es-SV', { dateStyle: 'short', timeStyle: 'short' });
 
         const perroEncontrado = perritos.find(p => p.nombre === nombrePerro);
         if (perroEncontrado) {
-            const guardarReporteEnNube = async (urlMedia, tipo) => {
-                const textoCompleto = `[${fechaHoraActual}] 📸 Reporte de ${nombrePerro}: ${texto}`;
-                
-                perroEncontrado.reportes.push({
-                    texto: textoCompleto,
-                    media: urlMedia,
-                    tipoMedia: tipo
+            const textoCompleto = `[${fechaHoraActual}] 📸 Reporte de ${nombrePerro}: ${texto}\n\n(Foto adjunta del paseo 📸👇)`;
+            
+            if (!perroEncontrado.reportes) perroEncontrado.reportes = [];
+            perroEncontrado.reportes.push({ texto: textoCompleto });
+
+            try {
+                await updateDoc(doc(db, "perritos", perroEncontrado.id), {
+                    reportes: perroEncontrado.reportes
                 });
 
-                try {
-                    await updateDoc(doc(db, "perritos", perroEncontrado.id), {
-                        reportes: perroEncontrado.reportes
-                    });
+                const telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
+                const urlWp = `https://wa.me/${telDueno}?text=${encodeURIComponent(textoCompleto)}`;
 
-                    cargarPerritosDeNube();
-                    navigator.clipboard.writeText(textoCompleto).catch(() => {});
-
-                    const telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
-                    const urlWp = `https://wa.me/${telDueno}?text=${encodeURIComponent(textoCompleto)}`;
-
-                    alert(`✅ ¡Reporte multimedia publicado y sincronizado en la nube para ${nombrePerro}!`);
-                    window.open(urlWp, '_blank');
-                    formNuevoReporte.reset();
-                    mostrarInicio();
-                } catch (error) {
-                    console.error("Error al actualizar reporte:", error);
-                }
-            };
-
-            if (inputArchivo.files && inputArchivo.files[0]) {
-                const archivo = inputArchivo.files[0];
-                const tipo = archivo.type.startsWith('video') ? 'video' : 'foto';
-                const reader = new FileReader();
-                reader.onload = function(uploadEvent) {
-                    guardarReporteEnNube(uploadEvent.target.result, tipo);
-                };
-                reader.readAsDataURL(archivo);
-            } else {
-                guardarReporteEnNube(null, null);
+                alert(`✅ ¡Reporte guardado! Se abrirá WhatsApp para que adjuntes la foto o tomes la captura al instante.`);
+                window.open(urlWp, '_blank');
+                formNuevoReporte.reset();
+                mostrarInicio();
+            } catch (error) {
+                console.error("Error al actualizar reporte:", error);
             }
         }
     });
 
-    // RESERVA DEL CLIENTE (Sincronizada en la nube)
+    // RESERVA DEL CLIENTE (Guarda la cita en el listado de citas del perrito)
     const formReserva = document.getElementById('form-reserva');
     formReserva.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -440,22 +442,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const fecha = document.getElementById('fecha').value;
 
         if(fecha) {
-            let citaOcupada = false;
-            perritos.forEach(p => {
-                if (p.reportes) {
-                    p.reportes.forEach(r => {
-                        if (r.texto && r.texto.includes(`📅 Cita agendada`) && r.texto.includes(fecha.replace('T', ' a las '))) {
-                            citaOcupada = true;
-                        }
-                    });
-                }
-            });
-
-            if (citaOcupada) {
-                alert(`❌ Lo sentimos mucho, pero este horario ya está reservado en la nube por otro perrito.\n\nPor favor, selecciona otra fecha u hora disponible. 🐾`);
-                return;
-            }
-
             const fechaFormateada = fecha.replace('T', ' a las ');
             const perroEncontrado = perritos.find(p => p.nombre === perroNombre);
             let dueno = "Cliente";
@@ -467,21 +453,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
                 familia = perroEncontrado.familia || "Familia";
                 
-                perroEncontrado.ultimaReserva = {
+                const nuevaCita = {
                     servicio: servicioSelect,
                     numPerros: numPerros,
-                    fecha: fechaFormateada
+                    fecha: fechaFormateada,
+                    fechaOriginal: fecha
                 };
 
+                perroEncontrado.ultimaReserva = nuevaCita;
+                if (!perroEncontrado.citas) perroEncontrado.citas = [];
+                perroEncontrado.citas.push(nuevaCita);
+
+                if (!perroEncontrado.reportes) perroEncontrado.reportes = [];
                 perroEncontrado.reportes.push({
-                    texto: `📅 Cita agendada: ${servicioSelect} (${numPerros} perros) para el ${fechaFormateada}.`,
-                    media: null,
-                    tipoMedia: null
+                    texto: `📅 Cita agendada: ${servicioSelect} (${numPerros} perros) para el ${fechaFormateada}.`
                 });
 
                 try {
                     await updateDoc(doc(db, "perritos", perroEncontrado.id), {
                         ultimaReserva: perroEncontrado.ultimaReserva,
+                        citas: perroEncontrado.citas,
                         reportes: perroEncontrado.reportes
                     });
                 } catch (error) {
