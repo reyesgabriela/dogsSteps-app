@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // ⚠️ REEMPLAZA ESTE NÚMERO CON TU WHATSAPP (Ej: 50370000000)
+    // Tu número de WhatsApp personal configurado
     const TU_NUMERO_WHATSAPP = "50373484771"; 
-    
-    // Contraseña protegida para el panel de paseador
     const PASSWORD_ADMIN = "1234";
 
     let perritos = JSON.parse(localStorage.getItem('dogs_perritos')) || [
@@ -14,19 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
             notas: "Le gusta correr mucho. Hidratación constante.",
             fotoPerfil: null,
             reportes: [{ texto: "Paseo de 45 min completado con éxito. ¡Muy enérgico! 🐕", foto: null }]
-        },
-        { 
-            nombre: "Luna", 
-            raza: "Beagle", 
-            edad: "2 años", 
-            direccion: "Santa Elena, Polígono 4", 
-            notas: "Olfatea demasiado, usar correa corta.",
-            fotoPerfil: null,
-            reportes: [{ texto: "Paseo de 30 min realizado sin novedad. 🐾", foto: null }]
         }
     ];
 
-    // Elementos de la interfaz
     const vistaInicio = document.getElementById('vista-inicio');
     const vistaPerfil = document.getElementById('vista-perfil');
     const vistaAdmin = document.getElementById('vista-admin');
@@ -38,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const buscador = document.getElementById('buscador-perros');
     const tarjetaPerfilDetalle = document.getElementById('tarjeta-perfil-detalle');
 
-    // Botones de navegación
     document.getElementById('titulo-app').addEventListener('click', mostrarInicio);
     document.getElementById('btn-volver-inicio').addEventListener('click', mostrarInicio);
     document.getElementById('btn-salir-admin').addEventListener('click', mostrarInicio);
@@ -66,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarPanelAdmin();
     }
 
-    // Renderizar directorio de perfiles (Buscable)
     function actualizarDirectorio(filtro = '') {
         directorioPerritos.innerHTML = '';
         selectPerritoReserva.innerHTML = '';
@@ -111,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
     }
 
-    // Mostrar perfil individual detallado
     function abrirPerfilIndividual(p) {
         vistaInicio.style.display = 'none';
         vistaPerfil.style.display = 'block';
@@ -123,8 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let htmlReportes = '';
         if (p.reportes.length > 0) {
-            htmlReportes = p.reportes.map(r => {
-                let imgTag = r.foto ? `<img src="${r.foto}" class="reporte-img"><span class="aviso-temporal">⏳ Foto temporal: Este archivo caduca y se elimina en 24 horas. ¡Descárgala!</span>` : '';
+            htmlReportes = p.reportes.map((r, index) => {
+                let imgTag = r.foto ? `
+                    <img src="${r.foto}" class="reporte-img">
+                    <a href="${r.foto}" download="paseo_${p.nombre}_${index}.jpg" class="btn-descarga">📥 Descargar Foto</a>
+                    <span class="aviso-temporal">⏳ Foto temporal: Este archivo caduca y se elimina en 24 horas. ¡Descárgala!</span>
+                ` : '';
                 return `
                     <div class="reporte-item">
                         📝 ${r.texto}
@@ -157,14 +146,15 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarDirectorio(e.target.value);
     });
 
-    // Permitir que los clientes registren a su perrito con foto de perfil
-    document.getElementById('form-cliente-perro').addEventListener('submit', (e) => {
+    const formClientePerro = document.getElementById('form-cliente-perro');
+    formClientePerro.onsubmit = function(e) {
         e.preventDefault();
         const inputFotoPerfil = document.getElementById('c-foto');
         
         const guardarNuevoPerrito = (urlFotoPerfil) => {
+            const nombreIngresado = document.getElementById('c-nombre').value;
             const nuevoPerro = {
-                nombre: document.getElementById('c-nombre').value,
+                nombre: nombreIngresado,
                 raza: document.getElementById('c-raza').value,
                 edad: document.getElementById('c-edad').value,
                 direccion: document.getElementById('c-direccion').value,
@@ -175,8 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             perritos.push(nuevoPerro);
             actualizarDirectorio();
-            document.getElementById('form-cliente-perro').reset();
-            alert('¡Tu perrito ha sido registrado con éxito en Dog\'s Step\'s!');
+            formClientePerro.reset();
+            alert(`¡Éxito! El perfil de "${nombreIngresado}" ha sido creado correctamente en Dog's Step's 🐾.`);
         };
 
         if (inputFotoPerfil.files && inputFotoPerfil.files[0]) {
@@ -188,11 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             guardarNuevoPerrito(null);
         }
-    });
+    };
 
-    // Actualizar elementos dentro del panel de administración (Selector y lista de borrado)
     function actualizarPanelAdmin() {
-        // Llenar selector de reportes
         selectPerritoReporte.innerHTML = '';
         perritos.forEach(p => {
             const opt = document.createElement('option');
@@ -201,7 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
             selectPerritoReporte.appendChild(opt);
         });
 
-        // Llenar lista de gestión para eliminar perfiles
         listaAdminPerros.innerHTML = '';
         if (perritos.length === 0) {
             listaAdminPerros.innerHTML = '<p style="color: #742a2a; font-size: 0.9rem;">No hay perritos registrados.</p>';
@@ -218,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="btn-peligro" data-index="${index}">Eliminar</button>
             `;
 
-            // Botón para eliminar perrito con confirmación
             fila.querySelector('button').addEventListener('click', () => {
                 if (confirm(`¿Estás segura de que deseas eliminar permanentemente el perfil de ${p.nombre}?`)) {
                     perritos.splice(index, 1);
@@ -232,8 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Enviar Reporte Oficial con foto adjunta (Desde el Admin protegido)
-    document.getElementById('form-nuevo-reporte').addEventListener('submit', (e) => {
+    const formNuevoReporte = document.getElementById('form-nuevo-reporte');
+    formNuevoReporte.onsubmit = function(e) {
         e.preventDefault();
         const nombrePerro = selectPerritoReporte.value;
         const texto = document.getElementById('texto-reporte').value;
@@ -248,8 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     foto: urlFoto
                 });
                 localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
-                alert(`¡Reporte publicado con éxito en el perfil de ${nombrePerro}!`);
-                document.getElementById('form-nuevo-reporte').reset();
+                alert(`🔒 ¡Reporte publicado con éxito en el perfil de ${nombrePerro}!`);
+                formNuevoReporte.reset();
                 mostrarInicio();
             };
 
@@ -263,10 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 guardarReporteConFoto(null);
             }
         }
-    });
+    };
 
-    // Manejo de reservas de clientes con notificación automática a WhatsApp
-    document.getElementById('form-reserva').addEventListener('submit', (e) => {
+    const formReserva = document.getElementById('form-reserva');
+    formReserva.onsubmit = function(e) {
         e.preventDefault();
         const dueno = document.getElementById('dueno').value;
         const perroNombre = selectPerritoReserva.value;
@@ -286,14 +272,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const mensajeWp = `¡Hola Dog's Step's! 🐾 Tengo una nueva reserva:%0A%0A👤 *Dueño:* ${dueno}%0A🐕 *Perrito:* ${perroNombre}%0A📋 *Servicio:* ${servicio}%0A📅 *Fecha y hora:* ${fechaFormateada}`;
-            
-            window.open(`https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensajeWp}`, '_blank');
+            const urlWp = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensajeWp}`;
 
-            alert(`¡Gracias ${dueno}! Paseo agendado con éxito para ${perroNombre}. Redirigiendo a WhatsApp para notificar a la paseadora... 🐾`);
-            document.getElementById('form-reserva').reset();
+            formReserva.reset();
             actualizarDirectorio();
+
+            if (confirm(`¡Cita agendada con éxito para ${perroNombre}! 🐾\n\n¿Deseas notificar inmediatamente a la paseadora por WhatsApp?`)) {
+                window.location.href = urlWp;
+            } else {
+                alert("Reserva guardada correctamente en el sistema.");
+            }
         }
-    });
+    };
 
     actualizarDirectorio();
 });
