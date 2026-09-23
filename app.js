@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Tu número de WhatsApp personal configurado
     const TU_NUMERO_WHATSAPP = "50373484771"; 
     const PASSWORD_ADMIN = "1234";
 
@@ -10,8 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
             edad: "3 años", 
             direccion: "Col. Escalón, Block B", 
             notas: "Le gusta correr mucho. Hidratación constante.",
+            telefonoDueno: "50300000000",
             fotoPerfil: null,
-            reportes: [{ texto: "Paseo de 45 min completado con éxito. ¡Muy enérgico! 🐕", foto: null }]
+            reportes: [{ texto: "Paseo de 45 min completado con éxito. ¡Muy enérgico! 🐕", media: null, tipoMedia: null }]
         }
     ];
 
@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const directorioPerritos = document.getElementById('directorio-perritos');
     const selectPerritoReserva = document.getElementById('perro-select');
     const selectPerritoReporte = document.getElementById('reporte-perro-select');
+    const selectAdminAlerta = document.getElementById('admin-perro-alerta');
+    const inputAdminTelCliente = document.getElementById('admin-tel-cliente');
     const listaAdminPerros = document.getElementById('lista-admin-perros');
     const buscador = document.getElementById('buscador-perros');
     const tarjetaPerfilDetalle = document.getElementById('tarjeta-perfil-detalle');
@@ -109,15 +111,26 @@ document.addEventListener('DOMContentLoaded', () => {
         let htmlReportes = '';
         if (p.reportes.length > 0) {
             htmlReportes = p.reportes.map((r, index) => {
-                let imgTag = r.foto ? `
-                    <img src="${r.foto}" class="reporte-img">
-                    <a href="${r.foto}" download="paseo_${p.nombre}_${index}.jpg" class="btn-descarga">📥 Descargar Foto</a>
-                    <span class="aviso-temporal">⏳ Foto temporal: Este archivo caduca y se elimina en 24 horas. ¡Descárgala!</span>
-                ` : '';
+                let mediaTag = '';
+                if (r.media) {
+                    if (r.tipoMedia === 'video') {
+                        mediaTag = `
+                            <video src="${r.media}" controls class="reporte-video"></video>
+                            <a href="${r.media}" download="video_paseo_${p.nombre}_${index}.mp4" class="btn-descarga">📥 Descargar Video</a>
+                            <span class="aviso-temporal">⏳ Archivo temporal: Este video caduca y se elimina en 24 horas. ¡Descárgalo!</span>
+                        `;
+                    } else {
+                        mediaTag = `
+                            <img src="${r.media}" class="reporte-img">
+                            <a href="${r.media}" download="foto_paseo_${p.nombre}_${index}.jpg" class="btn-descarga">📥 Descargar Foto</a>
+                            <span class="aviso-temporal">⏳ Archivo temporal: Esta foto caduca y se elimina en 24 horas. ¡Descárgala!</span>
+                        `;
+                    }
+                }
                 return `
                     <div class="reporte-item">
                         📝 ${r.texto}
-                        ${imgTag}
+                        ${mediaTag}
                     </div>
                 `;
             }).join('');
@@ -159,8 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 edad: document.getElementById('c-edad').value,
                 direccion: document.getElementById('c-direccion').value,
                 notas: document.getElementById('c-notas').value,
+                telefonoDueno: "50300000000",
                 fotoPerfil: urlFotoPerfil,
-                reportes: [{ texto: "¡Perfil registrado exitosamente en Dog's Step's! 🎉", foto: null }]
+                reportes: [{ texto: "¡Perfil registrado exitosamente en Dog's Step's! 🎉", media: null, tipoMedia: null }]
             };
 
             perritos.push(nuevoPerro);
@@ -182,12 +196,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function actualizarPanelAdmin() {
         selectPerritoReporte.innerHTML = '';
+        selectAdminAlerta.innerHTML = '';
+        
         perritos.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.nombre;
-            opt.textContent = p.nombre;
-            selectPerritoReporte.appendChild(opt);
+            const opt1 = document.createElement('option');
+            opt1.value = p.nombre;
+            opt1.textContent = p.nombre;
+            selectPerritoReporte.appendChild(opt1);
+
+            const opt2 = document.createElement('option');
+            opt2.value = p.nombre;
+            opt2.textContent = p.nombre;
+            opt2.dataset.tel = p.telefonoDueno || "";
+            selectAdminAlerta.appendChild(opt2);
         });
+
+        selectAdminAlerta.onchange = function() {
+            const selectedOpt = selectAdminAlerta.options[selectAdminAlerta.selectedIndex];
+            inputAdminTelCliente.value = selectedOpt.dataset.tel || "";
+        };
+        if(selectAdminAlerta.options.length > 0) {
+            selectAdminAlerta.onchange();
+        }
 
         listaAdminPerros.innerHTML = '';
         if (perritos.length === 0) {
@@ -218,20 +248,44 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    document.getElementById('btn-iniciar-paseo').onclick = function() {
+        const nombrePerro = selectAdminAlerta.value;
+        const telCliente = inputAdminTelCliente.value.trim();
+        if(!telCliente) {
+            alert("Por favor ingresa el número de WhatsApp del cliente.");
+            return;
+        }
+        const mensaje = `¡Hola! 🐾 Te escribimos de Dog's Step's para avisarte que *acabamos de iniciar* el paseo de ${nombrePerro}. ¡Todo listo y con la mejor energía! 🐕✨`;
+        window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensaje)}`, '_blank');
+    };
+
+    document.getElementById('btn-finalizar-paseo').onclick = function() {
+        const nombrePerro = selectAdminAlerta.value;
+        const telCliente = inputAdminTelCliente.value.trim();
+        if(!telCliente) {
+            alert("Por favor ingresa el número de WhatsApp del cliente.");
+            return;
+        }
+        const mensaje = `¡Hola! 🐾 Te escribimos de Dog's Step's para avisarte que *hemos finalizado con éxito* el paseo de ${nombrePerro}. ¡Ya está de vuelta en casa y descansando feliz! ❤️🏡`;
+        window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensaje)}`, '_blank');
+    };
+
+    // Publicar reporte con soporte para fotos o videos
     const formNuevoReporte = document.getElementById('form-nuevo-reporte');
     formNuevoReporte.onsubmit = function(e) {
         e.preventDefault();
         const nombrePerro = selectPerritoReporte.value;
         const texto = document.getElementById('texto-reporte').value;
-        const inputFoto = document.getElementById('foto-reporte');
+        const inputArchivo = document.getElementById('archivo-reporte');
         const fechaHoraActual = new Date().toLocaleString('es-SV', { dateStyle: 'short', timeStyle: 'short' });
 
         const perroEncontrado = perritos.find(p => p.nombre === nombrePerro);
         if (perroEncontrado) {
-            const guardarReporteConFoto = (urlFoto) => {
+            const guardarReporteMultimedia = (urlMedia, tipo) => {
                 perroEncontrado.reportes.push({
                     texto: `[${fechaHoraActual}] ${texto}`,
-                    foto: urlFoto
+                    media: urlMedia,
+                    tipoMedia: tipo
                 });
                 localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
                 alert(`🔒 ¡Reporte publicado con éxito en el perfil de ${nombrePerro}!`);
@@ -239,14 +293,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 mostrarInicio();
             };
 
-            if (inputFoto.files && inputFoto.files[0]) {
+            if (inputArchivo.files && inputArchivo.files[0]) {
+                const archivo = inputArchivo.files[0];
+                const tipo = archivo.type.startsWith('video') ? 'video' : 'foto';
                 const reader = new FileReader();
                 reader.onload = function(uploadEvent) {
-                    guardarReporteConFoto(uploadEvent.target.result);
+                    guardarReporteMultimedia(uploadEvent.target.result, tipo);
                 };
-                reader.readAsDataURL(inputFoto.files[0]);
+                reader.readAsDataURL(archivo);
             } else {
-                guardarReporteConFoto(null);
+                guardarReporteMultimedia(null, null);
             }
         }
     };
@@ -255,6 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
     formReserva.onsubmit = function(e) {
         e.preventDefault();
         const dueno = document.getElementById('dueno').value;
+        const telDueno = document.getElementById('tel-dueno').value;
         const perroNombre = selectPerritoReserva.value;
         const servicio = document.getElementById('servicio').value;
         const fecha = document.getElementById('fecha').value;
@@ -264,14 +321,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const perroEncontrado = perritos.find(p => p.nombre === perroNombre);
             if(perroEncontrado) {
+                perroEncontrado.telefonoDueno = telDueno;
                 perroEncontrado.reportes.push({
                     texto: `📅 Paseo agendado (${servicio}) para el ${fechaFormateada} por ${dueno}.`,
-                    foto: null
+                    media: null,
+                    tipoMedia: null
                 });
                 localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
             }
 
-            const mensajeWp = `¡Hola Dog's Step's! 🐾 Tengo una nueva reserva:%0A%0A👤 *Dueño:* ${dueno}%0A🐕 *Perrito:* ${perroNombre}%0A📋 *Servicio:* ${servicio}%0A📅 *Fecha y hora:* ${fechaFormateada}`;
+            const mensajeWp = `¡Hola Dog's Step's! 🐾 Tengo una nueva reserva:%0A%0A👤 *Dueño:* ${dueno}%0A📱 *Teléfono:* ${telDueno}%0A🐕 *Perrito:* ${perroNombre}%0A📋 *Servicio:* ${servicio}%0A📅 *Fecha y hora:* ${fechaFormateada}`;
             const urlWp = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensajeWp}`;
 
             formReserva.reset();
