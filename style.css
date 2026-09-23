@@ -99,6 +99,21 @@ form button:hover {
     background-color: #6e533f;
 }
 
+.btn-peligro {
+    background-color: #e53e3e;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.btn-peligro:hover {
+    background-color: #c53030;
+}
+
 .perfil-card-item {
     display: flex;
     align-items: center;
@@ -116,6 +131,36 @@ form button:hover {
     background: #f0e6dc;
 }
 
+.admin-perfil-fila {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #fed7d7;
+}
+
+.avatar-perfil-min {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #4a3319;
+    margin-right: 10px;
+}
+
+.avatar-perfil-grande {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #4a3319;
+    margin: 0 auto 0.5rem auto;
+    display: block;
+}
+
 .servicios-lista {
     list-style: none;
     padding: 0;
@@ -128,9 +173,25 @@ form button:hover {
 
 .reporte-item {
     background: #f9f6f0;
-    padding: 0.6rem 0.8rem;
-    margin-bottom: 0.5rem;
-    border-radius: 6px;
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+    border-radius: 8px;
     border-left: 3px solid #8c6d53;
     font-size: 0.9rem;
+}
+
+.reporte-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    border: 1px solid #d4c3b3;
+}
+
+.aviso-temporal {
+    font-size: 0.75rem;
+    color: #b71c1c;
+    font-style: italic;
+    margin-top: 0.3rem;
+    display: block;
 }
