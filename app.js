@@ -1,21 +1,26 @@
+// Importar Firebase SDK desde los servidores oficiales de Google (CDN)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Tu configuración de Firebase obtenida de la consola
+const firebaseConfig = {
+    apiKey: "AIzaSyCuXyJ_HdMbortpE5w1ZTyR8DbVi5CXWtY",
+    authDomain: "dogs-steps.firebaseapp.com",
+    projectId: "dogs-steps",
+    storageBucket: "dogs-steps.firebasestorage.app",
+    messagingSenderId: "218797965541",
+    appId: "1:218797965541:web:98998455ea54983ba4d40c"
+};
+
+// Inicializar Firebase y Firestore
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 document.addEventListener('DOMContentLoaded', () => {
     const TU_NUMERO_WHATSAPP = "50373484771"; 
     const PASSWORD_ADMIN = "1234";
 
-    let perritos = JSON.parse(localStorage.getItem('dogs_perritos')) || [
-        { 
-            nombre: "Max", 
-            familia: "Familia Ramírez",
-            raza: "Golden Retriever", 
-            edad: "3 años", 
-            direccion: "Col. Escalón, Block B", 
-            notas: "Le gusta correr mucho.",
-            nombreDueno: "Natalia Ramírez",
-            telefonoDueno: "50373484771",
-            fotoPerfil: null,
-            reportes: [{ texto: "¡Perfil inicial registrado en Dog's Step's! 🐾", media: null, tipoMedia: null }]
-        }
-    ];
+    let perritos = [];
 
     const vistaInicio = document.getElementById('vista-inicio');
     const vistaPerfil = document.getElementById('vista-perfil');
@@ -44,18 +49,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    async function cargarPerritosDeNube() {
+        try {
+            const querySnapshot = await getDocs(collection(db, "perritos"));
+            perritos = [];
+            querySnapshot.forEach((docSnap) => {
+                perritos.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            actualizarDirectorio();
+        } catch (error) {
+            console.error("Error al cargar desde Firebase:", error);
+        }
+    }
+
     function mostrarInicio() {
         vistaInicio.style.display = 'block';
         vistaPerfil.style.display = 'none';
         vistaAdmin.style.display = 'none';
-        actualizarDirectorio();
+        cargarPerritosDeNube();
     }
 
     function mostrarAdmin() {
         vistaInicio.style.display = 'none';
         vistaPerfil.style.display = 'none';
         vistaAdmin.style.display = 'block';
-        actualizarPanelAdmin();
+        cargarPerritosDeNube().then(() => actualizarPanelAdmin());
     }
 
     function actualizarDirectorio(filtro = '') {
@@ -63,9 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
         selectPerritoReserva.innerHTML = '';
 
         const perritosFiltrados = perritos.filter(p => 
-            p.nombre.toLowerCase().includes(filtro.toLowerCase()) || 
-            p.familia.toLowerCase().includes(filtro.toLowerCase()) ||
-            p.raza.toLowerCase().includes(filtro.toLowerCase())
+            (p.nombre && p.nombre.toLowerCase().includes(filtro.toLowerCase())) || 
+            (p.familia && p.familia.toLowerCase().includes(filtro.toLowerCase())) ||
+            (p.raza && p.raza.toLowerCase().includes(filtro.toLowerCase()))
         );
 
         if (perritosFiltrados.length === 0) {
@@ -102,8 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             directorioPerritos.appendChild(div);
         });
-
-        localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
     }
 
     function abrirPerfilIndividual(p) {
@@ -116,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `<div style="font-size: 3.5rem; background: #faf6f0; width: 90px; height: 90px; line-height: 90px; border-radius: 50%; margin: 0 auto 0.5rem auto; border: 3px solid #4a3319; text-align: center;">🐕</div>`;
 
         let htmlReportes = '';
-        if (p.reportes.length > 0) {
+        if (p.reportes && p.reportes.length > 0) {
             htmlReportes = p.reportes.map((r, index) => {
                 let mediaTag = '';
                 if (r.media) {
@@ -168,15 +184,15 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarDirectorio(e.target.value);
     });
 
-    // Registro de perrito
+    // Registrar nuevo perrito directamente en Firebase
     const formClientePerro = document.getElementById('form-cliente-perro');
-    formClientePerro.addEventListener('submit', function(e) {
+    formClientePerro.addEventListener('submit', async function(e) {
         e.preventDefault();
         const inputFotoPerfil = document.getElementById('c-foto');
         const nombreIngresado = document.getElementById('c-nombre').value;
         const familiaIngresada = document.getElementById('c-familia').value;
         
-        const guardarNuevoPerrito = (urlFotoPerfil) => {
+        const guardarEnNube = async (urlFotoPerfil) => {
             const nuevoPerro = {
                 nombre: nombreIngresado,
                 familia: familiaIngresada,
@@ -187,23 +203,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 direccion: document.getElementById('c-direccion').value,
                 notas: document.getElementById('c-notas').value,
                 fotoPerfil: urlFotoPerfil,
-                reportes: [{ texto: `¡Perfil de ${nombreIngresado} registrado con éxito en ${familiaIngresada}! 🎉`, media: null, tipoMedia: null }]
+                reportes: [{ texto: `¡Perfil de ${nombreIngresado} registrado con éxito en ${familiaIngresada}! 🎉`, media: null, tipoMedia: null }],
+                ultimaReserva: null
             };
 
-            perritos.push(nuevoPerro);
-            actualizarDirectorio();
-            formClientePerro.reset();
-            alert(`¡Éxito! El perfil de "${nombreIngresado}" (${familiaIngresada}) ha sido creado correctamente en Dog's Step's 🐾.`);
+            try {
+                await addDoc(collection(db, "perritos"), nuevoPerro);
+                formClientePerro.reset();
+                alert(`¡Éxito! El perfil de "${nombreIngresado}" (${familiaIngresada}) ha sido creado y guardado en la nube 🐾.`);
+                cargarPerritosDeNube();
+            } catch (error) {
+                console.error("Error al guardar en Firebase:", error);
+                alert("Hubo un error al guardar el registro en la nube.");
+            }
         };
 
         if (inputFotoPerfil.files && inputFotoPerfil.files[0]) {
             const reader = new FileReader();
             reader.onload = function(uploadEvent) {
-                guardarNuevoPerrito(uploadEvent.target.result);
+                guardarEnNube(uploadEvent.target.result);
             };
             reader.readAsDataURL(inputFotoPerfil.files[0]);
         } else {
-            guardarNuevoPerrito(null);
+            guardarEnNube(null);
         }
     });
 
@@ -251,22 +273,26 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        perritos.forEach((p, index) => {
+        perritos.forEach((p) => {
             const fila = document.createElement('div');
             fila.className = 'admin-perfil-fila';
             fila.innerHTML = `
                 <div>
                     <strong>🐕 ${p.nombre}</strong> <small style="color: #666;">[${p.familia}]</small>
                 </div>
-                <button class="btn-peligro" data-index="${index}">Eliminar</button>
+                <button class="btn-peligro" data-id="${p.id}">Eliminar</button>
             `;
 
-            fila.querySelector('button').addEventListener('click', () => {
-                if (confirm(`¿Estás segura de eliminar permanentemente a ${p.nombre}?`)) {
-                    perritos.splice(index, 1);
-                    localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
-                    actualizarPanelAdmin();
-                    alert('Perfil eliminado con éxito.');
+            fila.querySelector('button').addEventListener('click', async () => {
+                if (confirm(`¿Estás segura de eliminar permanentemente a ${p.nombre} de la nube?`)) {
+                    try {
+                        await deleteDoc(doc(db, "perritos", p.id));
+                        await cargarPerritosDeNube();
+                        actualizarPanelAdmin();
+                        alert('Perfil eliminado con éxito.');
+                    } catch (error) {
+                        console.error("Error al eliminar:", error);
+                    }
                 }
             });
 
@@ -342,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 media: null,
                 tipoMedia: null
             });
-            localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
+            updateDoc(doc(db, "perritos", perroEncontrado.id), { reportes: perroEncontrado.reportes });
         }
 
         const mensajeWp = `🐾 *FACTURA / RECIBO - DOG'S STEP'S* 🐾%0A%0A👤 *Cliente / Familia:* ${dueno} (${familia})%0A🐕 *Perrito principal:* ${nombrePerro}%0A📋 *Servicio:* ${servicioSelect}%0A🐶 *Cantidad de perritos:* ${numPerros}${detalleExtras}%0A%0A💰 *TOTAL A PAGAR: $${totalPagar}.00*%0A%0A💳 *Métodos de pago:*%0A• Efectivo%0A• Transferencia Bancoagrícola%0A  Titular: NATALIA REYES%0A  N° de Cuenta: \`3100617261\`%0A%0A¡Gracias por confiar en Dog's Step's! 🐕✨`;
@@ -350,9 +376,9 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://wa.me/${telCliente}?text=${mensajeWp}`, '_blank');
     };
 
-    // PUBLICAR REPORTE (Soporta Fotos y Videos con actualización instantánea)
+    // PUBLICAR REPORTE (Actualiza en la nube de Firebase)
     const formNuevoReporte = document.getElementById('form-nuevo-reporte');
-    formNuevoReporte.addEventListener('submit', function(e) {
+    formNuevoReporte.addEventListener('submit', async function(e) {
         e.preventDefault();
         const nombrePerro = selectPerritoReporte.value;
         const texto = document.getElementById('texto-reporte').value;
@@ -361,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const perroEncontrado = perritos.find(p => p.nombre === nombrePerro);
         if (perroEncontrado) {
-            const guardarReporteMultimedia = (urlMedia, tipo) => {
+            const guardarReporteEnNube = async (urlMedia, tipo) => {
                 const textoCompleto = `[${fechaHoraActual}] 📸 Reporte de ${nombrePerro}: ${texto}`;
                 
                 perroEncontrado.reportes.push({
@@ -369,21 +395,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     media: urlMedia,
                     tipoMedia: tipo
                 });
-                localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
 
-                // Refrescar paneles y directorios al instante sin salir de la app
-                actualizarPanelAdmin();
-                actualizarDirectorio();
+                try {
+                    await updateDoc(doc(db, "perritos", perroEncontrado.id), {
+                        reportes: perroEncontrado.reportes
+                    });
 
-                navigator.clipboard.writeText(textoCompleto).catch(() => {});
+                    cargarPerritosDeNube();
+                    navigator.clipboard.writeText(textoCompleto).catch(() => {});
 
-                const telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
-                const urlWp = `https://wa.me/${telDueno}?text=${encodeURIComponent(textoCompleto)}`;
+                    const telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
+                    const urlWp = `https://wa.me/${telDueno}?text=${encodeURIComponent(textoCompleto)}`;
 
-                alert(`✅ ¡Reporte multimedia publicado con éxito para ${nombrePerro}!\n\nEl texto se ha copiado al portapapeles y se abrirá WhatsApp para enviarlo al dueño.`);
-
-                window.open(urlWp, '_blank');
-                formNuevoReporte.reset();
+                    alert(`✅ ¡Reporte multimedia publicado y sincronizado en la nube para ${nombrePerro}!`);
+                    window.open(urlWp, '_blank');
+                    formNuevoReporte.reset();
+                    mostrarInicio();
+                } catch (error) {
+                    console.error("Error al actualizar reporte:", error);
+                }
             };
 
             if (inputArchivo.files && inputArchivo.files[0]) {
@@ -391,18 +421,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tipo = archivo.type.startsWith('video') ? 'video' : 'foto';
                 const reader = new FileReader();
                 reader.onload = function(uploadEvent) {
-                    guardarReporteMultimedia(uploadEvent.target.result, tipo);
+                    guardarReporteEnNube(uploadEvent.target.result, tipo);
                 };
                 reader.readAsDataURL(archivo);
             } else {
-                guardarReporteMultimedia(null, null);
+                guardarReporteEnNube(null, null);
             }
         }
     });
 
-    // RESERVA DEL CLIENTE
+    // RESERVA DEL CLIENTE (Sincronizada en la nube)
     const formReserva = document.getElementById('form-reserva');
-    formReserva.addEventListener('submit', function(e) {
+    formReserva.addEventListener('submit', async function(e) {
         e.preventDefault();
         const perroNombre = selectPerritoReserva.value;
         const servicioSelect = document.getElementById('servicio').value;
@@ -412,20 +442,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if(fecha) {
             let citaOcupada = false;
             perritos.forEach(p => {
-                p.reportes.forEach(r => {
-                    if (r.texto && r.texto.includes(`📅 Cita agendada`) && r.texto.includes(fecha.replace('T', ' a las '))) {
-                        citaOcupada = true;
-                    }
-                });
+                if (p.reportes) {
+                    p.reportes.forEach(r => {
+                        if (r.texto && r.texto.includes(`📅 Cita agendada`) && r.texto.includes(fecha.replace('T', ' a las '))) {
+                            citaOcupada = true;
+                        }
+                    });
+                }
             });
 
             if (citaOcupada) {
-                alert(`❌ Lo sentimos mucho, pero este espacio u horario ya está reservado por otro perrito.\n\nPor favor, selecciona otra fecha u hora disponible. 🐾`);
+                alert(`❌ Lo sentimos mucho, pero este horario ya está reservado en la nube por otro perrito.\n\nPor favor, selecciona otra fecha u hora disponible. 🐾`);
                 return;
             }
 
             const fechaFormateada = fecha.replace('T', ' a las ');
-            
             const perroEncontrado = perritos.find(p => p.nombre === perroNombre);
             let dueno = "Cliente";
             let telDueno = TU_NUMERO_WHATSAPP;
@@ -447,16 +478,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     media: null,
                     tipoMedia: null
                 });
-                localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
+
+                try {
+                    await updateDoc(doc(db, "perritos", perroEncontrado.id), {
+                        ultimaReserva: perroEncontrado.ultimaReserva,
+                        reportes: perroEncontrado.reportes
+                    });
+                } catch (error) {
+                    console.error("Error al guardar reserva en Firebase:", error);
+                }
             }
 
             const mensajeWp = `¡Hola Dog's Step's! 🐾 Tengo una nueva reserva de espacio:%0A%0A👤 *Dueño:* ${dueno} (${familia})%0A📱 *Teléfono:* ${telDueno}%0A🐕 *Perrito:* ${perroNombre}%0A📋 *Servicio:* ${servicioSelect}%0A🐶 *Perritos:* ${numPerros}%0A📅 *Fecha:* ${fechaFormateada}`;
             const urlWp = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensajeWp}`;
 
             formReserva.reset();
-            actualizarDirectorio();
+            cargarPerritosDeNube();
 
-            if (confirm(`¡Cita agendada con éxito para ${perroNombre} (${familia})! 🐾\n\n¿Deseas notificar inmediatamente a tu WhatsApp que hay un nuevo cupo reservado?`)) {
+            if (confirm(`¡Cita agendada y guardada en la nube para ${perroNombre} (${familia})! 🐾\n\n¿Deseas notificar inmediatamente a tu WhatsApp que hay un nuevo cupo reservado?`)) {
                 window.location.href = urlWp;
             } else {
                 alert(`¡Cita agendada correctamente en el sistema!`);
@@ -464,5 +503,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    actualizarDirectorio();
+    cargarPerritosDeNube();
 });
