@@ -79,7 +79,7 @@
                 </form>
             </section>
 
-            <!-- Sección de Reservas con Anticolisión de Horarios -->
+            <!-- Sección de Reservas -->
             <section class="card">
                 <h2>Agendar un Paseo</h2>
                 <form id="form-reserva">
@@ -105,7 +105,7 @@
                     </select>
 
                     <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.8rem; font-weight: normal; cursor: pointer;">
-                        <input type="checkbox" id="es-domingo-feriado" style="width: auto; margin: 0;"> ☀️ ¿Is Domingo o Día Feriado? (+$2)
+                        <input type="checkbox" id="es-domingo-feriado" style="width: auto; margin: 0;"> ☀️ ¿Es Domingo o Día Feriado? (+$2)
                     </label>
 
                     <label for="fecha">Fecha y Hora:</label>
@@ -142,32 +142,13 @@
                     <label for="admin-tel-cliente">WhatsApp del Dueño:</label>
                     <input type="text" id="admin-tel-cliente" readonly style="background: #eee; margin-bottom: 0.8rem; font-weight: bold;">
 
+                    <!-- Factura Automática -->
                     <div style="background: #fff; padding: 0.8rem; border-radius: 6px; border: 1px solid #d4c3b3; margin-bottom: 1rem;">
-                        <h4 style="margin: 0 0 0.5rem 0; color: #4a3319; font-size: 0.95rem;">🧾 Generar Factura / Recibo de Pago</h4>
-                        
-                        <label for="admin-servicio-factura" style="font-size: 0.85rem;">Servicio a cobrar:</label>
-                        <select id="admin-servicio-factura" style="margin-bottom: 0.5rem; font-size: 0.9rem;">
-                            <option value="Paseo 30 min ($6)">Paseo 30 min ($6)</option>
-                            <option value="Paseo 45 min ($8)">Paseo 45 min ($8)</option>
-                            <option value="Paseo 60 min ($10)">Paseo 60 min ($10)</option>
-                            <option value="Paquete 5 paseos ($38)">Paquete 5 paseos ($38)</option>
-                            <option value="Paquete 12 paseos ($84)">Paquete 12 paseos ($84)</option>
-                            <option value="Paquete 20 paseos ($130)">Paquete 20 paseos ($130)</option>
-                            <option value="Primer Paseo Oferta ($4)">Primer Paseo Oferta ($4)</option>
-                        </select>
-
-                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <select id="admin-num-perros" style="font-size: 0.85rem; margin-top:0;">
-                                <option value="1">1 Perrito</option>
-                                <option value="2">2 Perritos (+$3)</option>
-                                <option value="3">3 Perritos (+$5)</option>
-                            </select>
-                            <label style="display: flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; font-weight: normal; margin-top: 0; cursor: pointer;">
-                                <input type="checkbox" id="admin-domingo" style="width: auto; margin: 0;"> Feriado (+$2)
-                            </label>
+                        <h4 style="margin: 0 0 0.5rem 0; color: #4a3319; font-size: 0.95rem;">🧾 Factura Automática de la Reserva</h4>
+                        <div id="info-ultima-reserva" style="font-size: 0.85rem; color: #5c4033; margin-bottom: 0.6rem; background: #fdfbf7; padding: 0.5rem; border-radius: 4px;">
+                            Selecciona un perrito para ver su última reserva...
                         </div>
-
-                        <button type="button" id="btn-enviar-factura" style="background-color: #276749; margin-top: 0.3rem; font-size: 0.9rem;">📤 Enviar Recibo y Cuenta por WhatsApp</button>
+                        <button type="button" id="btn-enviar-factura-auto" style="background-color: #276749; margin-top: 0; font-size: 0.9rem;">📤 Enviar Recibo Automático por WhatsApp</button>
                     </div>
 
                     <div style="display: flex; gap: 0.5rem;">
@@ -177,7 +158,7 @@
                 </div>
 
                 <form id="form-nuevo-reporte" style="background: #fdfbf7; padding: 1rem; border-radius: 8px; border: 1px solid #d4c3b3; margin-bottom: 1.5rem;">
-                    <h3 style="color: #4a3319; margin-top:0;">Enviar Reporte con Foto o Video</h3>
+                    <h3 style="color: #4a3319; margin-top:0;">Enviar Reporte con Foto o Video al Dueño</h3>
                     
                     <label for="reporte-perro-select">Seleccionar Perrito:</label>
                     <select id="reporte-perro-select" required></select>
@@ -185,10 +166,10 @@
                     <label for="texto-reporte">Detalle del Reporte:</label>
                     <textarea id="texto-reporte" rows="3" placeholder="Ej. ¡Paseo increíble! Hizo sus necesidades y se divirtió mucho." style="width: 100%; padding: 0.7rem; margin-top: 0.3rem; border: 1px solid #d4c3b3; border-radius: 8px; font-family: inherit; box-sizing: border-box;" required></textarea>
 
-                    <label for="archivo-reporte">Adjuntar Archivo Multimedia:</label>
+                    <label for="archivo-reporte">Adjuntar Foto o Video (Se guardará en su perfil):</label>
                     <input type="file" id="archivo-reporte" accept="image/*,video/*" style="background: white; padding: 0.5rem; margin-top: 0.3rem;">
 
-                    <button type="submit" style="margin-top: 1rem; background-color: #2e7d32;">Publicar Reporte Multimedia</button>
+                    <button type="submit" style="margin-top: 1rem; background-color: #2e7d32;">Publicar y Enviar a WhatsApp</button>
                 </form>
 
                 <div style="background: #fff5f5; padding: 1rem; border-radius: 8px; border: 1px solid #feb2b2;">
