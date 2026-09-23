@@ -167,15 +167,15 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarDirectorio(e.target.value);
     });
 
-    // Registro con alerta de éxito asegurada
+    // REGISTRO DE PERRITO (Con alerta asegurada al 100%)
     const formClientePerro = document.getElementById('form-cliente-perro');
-    formClientePerro.onsubmit = function(e) {
+    formClientePerro.addEventListener('submit', function(e) {
         e.preventDefault();
         const inputFotoPerfil = document.getElementById('c-foto');
+        const nombreIngresado = document.getElementById('c-nombre').value;
+        const familiaIngresada = document.getElementById('c-familia').value;
         
         const guardarNuevoPerrito = (urlFotoPerfil) => {
-            const nombreIngresado = document.getElementById('c-nombre').value;
-            const familiaIngresada = document.getElementById('c-familia').value;
             const nuevoPerro = {
                 nombre: nombreIngresado,
                 familia: familiaIngresada,
@@ -192,6 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
             perritos.push(nuevoPerro);
             actualizarDirectorio();
             formClientePerro.reset();
+            
+            // Alerta de confirmación inmediata
             alert(`¡Éxito! El perfil de "${nombreIngresado}" (${familiaIngresada}) ha sido creado correctamente en Dog's Step's 🐾.`);
         };
 
@@ -204,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             guardarNuevoPerrito(null);
         }
-    };
+    });
 
     function actualizarPanelAdmin() {
         selectPerritoReporte.innerHTML = '';
@@ -283,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const formNuevoReporte = document.getElementById('form-nuevo-reporte');
-    formNuevoReporte.onsubmit = function(e) {
+    formNuevoReporte.addEventListener('submit', function(e) {
         e.preventDefault();
         const nombrePerro = selectPerritoReporte.value;
         const texto = document.getElementById('texto-reporte').value;
@@ -316,11 +318,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 guardarReporteMultimedia(null, null);
             }
         }
-    };
+    });
 
-    // RESERVA CON CÁLCULO DE FACTURA Y ALERTA DE ÉXITO CLARA
+    // RESERVA CON CÁLCULO Y ALERTA DE ÉXITO ESTRICTA
     const formReserva = document.getElementById('form-reserva');
-    formReserva.onsubmit = function(e) {
+    formReserva.addEventListener('submit', function(e) {
         e.preventDefault();
         const perroNombre = selectPerritoReserva.value;
         const servicioSelect = document.getElementById('servicio').value;
@@ -380,14 +382,14 @@ document.addEventListener('DOMContentLoaded', () => {
             formReserva.reset();
             actualizarDirectorio();
 
-            // Alerta clara de éxito y opción de mandar la factura por WhatsApp
-            if (confirm(`¡Cita agendada con éxito para ${perroNombre} (${familia})! 🐾\n\nTotal calculado: $${totalPagar}.00\n\n¿Deseas enviar esta factura y notificar por WhatsApp?`)) {
+            // Alerta estricta de confirmación
+            if (confirm(`¡Cita agendada con éxito para ${perroNombre} (${familia})! 🐾\n\nTotal calculado: $${totalPagar}.00\n\n¿Deseas enviar la factura por WhatsApp ahora mismo?`)) {
                 window.location.href = urlWp;
             } else {
-                alert(`¡Cita agendada correctamente! Total a pagar: $${totalPagar}.00 guardado en su perfil.`);
+                alert(`¡Cita agendada con éxito! Total a pagar: $${totalPagar}.00 guardado en el perfil.`);
             }
         }
-    };
+    });
 
     actualizarDirectorio();
 });
