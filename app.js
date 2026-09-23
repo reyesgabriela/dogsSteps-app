@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectPerritoReporte = document.getElementById('reporte-perro-select');
     const selectAdminAlerta = document.getElementById('admin-perro-alerta');
     const inputAdminTelCliente = document.getElementById('admin-tel-cliente');
+    const infoUltimaReserva = document.getElementById('info-ultima-reserva');
     const listaAdminPerros = document.getElementById('lista-admin-perros');
     const buscador = document.getElementById('buscador-perros');
     const tarjetaPerfilDetalle = document.getElementById('tarjeta-perfil-detalle');
@@ -167,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarDirectorio(e.target.value);
     });
 
-    // Registro de perrito por el cliente
+    // Registro de perrito
     const formClientePerro = document.getElementById('form-cliente-perro');
     formClientePerro.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -226,7 +227,20 @@ document.addEventListener('DOMContentLoaded', () => {
         selectAdminAlerta.onchange = function() {
             const selectedOpt = selectAdminAlerta.options[selectAdminAlerta.selectedIndex];
             inputAdminTelCliente.value = selectedOpt.dataset.tel || "";
+            
+            const perritoActual = perritos.find(p => p.nombre === selectAdminAlerta.value);
+            if (perritoActual && perritoActual.ultimaReserva) {
+                const r = perritoActual.ultimaReserva;
+                infoUltimaReserva.innerHTML = `📋 <strong>Servicio:</strong> ${r.servicio}<br>🐶 <strong>Perritos:</strong> ${r.numPerros}<br>📅 <strong>Fecha:</strong> ${r.fecha}`;
+                infoUltimaReserva.dataset.servicio = r.servicio;
+                infoUltimaReserva.dataset.numPerros = r.numPerros;
+            } else {
+                infoUltimaReserva.innerHTML = `⚠️ Este perrito aún no tiene una reserva registrada en el sistema.`;
+                infoUltimaReserva.dataset.servicio = "";
+                infoUltimaReserva.dataset.numPerros = "1";
+            }
         };
+
         if(selectAdminAlerta.options.length > 0) {
             selectAdminAlerta.onchange();
         }
@@ -282,16 +296,19 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensaje)}`, '_blank');
     };
 
-    // Botón de envío de factura desde admin
-    document.getElementById('btn-enviar-factura').onclick = function() {
+    // GENERAR FACTURA AUTOMÁTICA DESDE LA RESERVA
+    document.getElementById('btn-enviar-factura-auto').onclick = function() {
         const nombrePerro = selectAdminAlerta.value;
         const telCliente = inputAdminTelCliente.value.trim();
-        const servicioSelect = document.getElementById('admin-servicio-factura').value;
-        const numPerros = parseInt(document.getElementById('admin-num-perros').value);
-        const esDomingoFeriado = document.getElementById('admin-domingo').checked;
+        const servicioSelect = infoUltimaReserva.dataset.servicio;
+        const numPerros = parseInt(infoUltimaReserva.dataset.numPerros || "1");
 
         if(!telCliente) {
             alert("No hay número de WhatsApp registrado para este cliente.");
+            return;
+        }
+        if(!servicioSelect) {
+            alert("Este perrito no tiene una reserva registrada para facturar automáticamente.");
             return;
         }
 
@@ -315,18 +332,13 @@ document.addEventListener('DOMContentLoaded', () => {
             detalleExtras += "%0A🐾 Segundo y tercer perro: +$5";
         }
 
-        if (esDomingoFeriado) {
-            totalPagar += 2;
-            detalleExtras += "%0A☀️ Domingo/Feriado: +$2";
-        }
-
         const perroEncontrado = perritos.find(p => p.nombre === nombrePerro);
         let dueno = perroEncontrado ? (perroEncontrado.nombreDueno || "Cliente") : "Cliente";
         let familia = perroEncontrado ? (perroEncontrado.familia || "Familia") : "Familia";
 
         if(perroEncontrado) {
             perroEncontrado.reportes.push({
-                texto: `🧾 Factura generada por admin: ${servicioSelect} (${numPerros} perros) - Total: $${totalPagar}.`,
+                texto: `🧾 Factura automática enviada: ${servicioSelect} (${numPerros} perros) - Total: $${totalPagar}.`,
                 media: null,
                 tipoMedia: null
             });
@@ -338,6 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://wa.me/${telCliente}?text=${mensajeWp}`, '_blank');
     };
 
+    // PUBLICAR REPORTE (Guarda la foto/video en el perfil y abre WhatsApp copiando el texto)
     const formNuevoReporte = document.getElementById('form-nuevo-reporte');
     formNuevoReporte.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -349,13 +362,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const perroEncontrado = perritos.find(p => p.nombre === nombrePerro);
         if (perroEncontrado) {
             const guardarReporteMultimedia = (urlMedia, tipo) => {
+                const textoCompleto = `[${fechaHoraActual}] 📸 Reporte de ${nombrePerro}: ${texto}`;
+                
                 perroEncontrado.reportes.push({
-                    texto: `[${fechaHoraActual}] ${texto}`,
+                    texto: textoCompleto,
                     media: urlMedia,
                     tipoMedia: tipo
                 });
                 localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
-                alert(`🔒 ¡Reporte publicado con éxito en el perfil de ${nombrePerro}!`);
+
+                // Copiar texto al portapapeles para pegarlo fácilmente en WhatsApp
+                navigator.clipboard.writeText(textoCompleto).catch(() => {});
+
+                const telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
+                const urlWp = `https://wa.me/${telDueno}?text=${encodeURIComponent(textoCompleto)}`;
+
+                alert(`✅ ¡Reporte guardado en el perfil de ${nombrePerro} y copiado al portapapeles!\n\nA continuación se abrirá WhatsApp para enviarlo al dueño (puedes adjuntar la foto recién descargada o seleccionada de tu galería con un toque).`);
+
+                window.open(urlWp, '_blank');
                 formNuevoReporte.reset();
                 mostrarInicio();
             };
@@ -374,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // RESERVA CON VALIDACIÓN INTELIGENTE DE HORARIOS (ANTICOLISIÓN)
+    // RESERVA DEL CLIENTE
     const formReserva = document.getElementById('form-reserva');
     formReserva.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -384,7 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const fecha = document.getElementById('fecha').value;
 
         if(fecha) {
-            // Verificar si ya existe una cita agendada en la misma fecha y hora exacta
             let citaOcupada = false;
             perritos.forEach(p => {
                 p.reportes.forEach(r => {
@@ -395,8 +418,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (citaOcupada) {
-                alert(`❌ Lo sentimos mucho, pero este espacio u horario ya está reservado por otro perrito.\n\nPor favor, selecciona otra fecha u hora disponible para que tu peludito disfrute su paseo con seguridad. 🐾`);
-                return; // Detiene el proceso y no permite cruzar los horarios
+                alert(`❌ Lo sentimos mucho, pero este espacio u horario ya está reservado por otro perrito.\n\nPor favor, selecciona otra fecha u hora disponible. 🐾`);
+                return;
             }
 
             const fechaFormateada = fecha.replace('T', ' a las ');
@@ -411,6 +434,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
                 familia = perroEncontrado.familia || "Familia";
                 
+                perroEncontrado.ultimaReserva = {
+                    servicio: servicioSelect,
+                    numPerros: numPerros,
+                    fecha: fechaFormateada
+                };
+
                 perroEncontrado.reportes.push({
                     texto: `📅 Cita agendada: ${servicioSelect} (${numPerros} perros) para el ${fechaFormateada}.`,
                     media: null,
