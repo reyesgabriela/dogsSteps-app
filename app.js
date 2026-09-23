@@ -167,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarDirectorio(e.target.value);
     });
 
+    // Registro con alerta de éxito asegurada
     const formClientePerro = document.getElementById('form-cliente-perro');
     formClientePerro.onsubmit = function(e) {
         e.preventDefault();
@@ -191,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
             perritos.push(nuevoPerro);
             actualizarDirectorio();
             formClientePerro.reset();
-            alert(`¡Éxito! El perrito "${nombreIngresado}" fue añadido a la ${familiaIngresada} 🐾.`);
+            alert(`¡Éxito! El perfil de "${nombreIngresado}" (${familiaIngresada}) ha sido creado correctamente en Dog's Step's 🐾.`);
         };
 
         if (inputFotoPerfil.files && inputFotoPerfil.files[0]) {
@@ -317,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // MOTOR DE CÁLCULO DE FACTURA Y RESERVA AUTOMÁTICA
+    // RESERVA CON CÁLCULO DE FACTURA Y ALERTA DE ÉXITO CLARA
     const formReserva = document.getElementById('form-reserva');
     formReserva.onsubmit = function(e) {
         e.preventDefault();
@@ -331,7 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const fechaFormateada = fecha.replace('T', ' a las ');
             let precioBase = 6;
 
-            // Determinar precio base según el servicio seleccionado
             if (servicioSelect.includes("30 min")) precioBase = 6;
             else if (servicioSelect.includes("45 min")) precioBase = 8;
             else if (servicioSelect.includes("60 min")) precioBase = 10;
@@ -343,16 +343,14 @@ document.addEventListener('DOMContentLoaded', () => {
             let totalPagar = precioBase;
             let detalleExtras = "";
 
-            // Calcular extras por segundo y tercer perro según el flyer
             if (numPerros === 2) {
                 totalPagar += 3;
                 detalleExtras += "\n🐾 Segundo perro: +$3";
             } else if (numPerros >= 3) {
-                totalPagar += 5; // +$3 segundo perro +$2 tercer perro
+                totalPagar += 5; 
                 detalleExtras += "\n🐾 Segundo y tercer perro: +$5";
             }
 
-            // Recargo por domingo o feriado
             if (esDomingoFeriado) {
                 totalPagar += 2;
                 detalleExtras += "\n☀️ Domingo/Feriado: +$2";
@@ -369,24 +367,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 familia = perroEncontrado.familia || "Familia";
                 
                 perroEncontrado.reportes.push({
-                    texto: `🧾 Factura generada: ${servicioSpec = servicioSelect} (${numPerros} perros) - Total: $${totalPagar}. Fecha: ${fechaFormateada}`,
+                    texto: `🧾 Factura generada: ${servicioSelect} (${numPerros} perros) - Total: $${totalPagar}. Fecha: ${fechaFormateada}`,
                     media: null,
                     tipoMedia: null
                 });
                 localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
             }
 
-            // Construir factura digital para WhatsApp
             const mensajeWp = `🐾 *FACTURA / RECIBO - DOG'S STEP'S* 🐾%0A%0A👤 *Cliente / Familia:* ${dueno} (${familia})%0A📱 *Teléfono:* ${telDueno}%0A🐕 *Perrito principal:* ${perroNombre}%0A📋 *Servicio:* ${servicioSelect}%0A🐶 *Cantidad de perritos:* ${numPerros}${detalleExtras}%0A📅 *Fecha del paseo:* ${fechaFormateada}%0A%0A💰 *TOTAL A PAGAR: $${totalPagar}.00*%0A%0A💳 *Métodos de pago:*%0A• Efectivo%0A• Bancoagrícola (Ahorro: 3100617261 - Natalia Reyes)%0A%0A¡Gracias por confiar en Dog's Step's! 🐕✨`;
             const urlWp = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensajeWp}`;
 
             formReserva.reset();
             actualizarDirectorio();
 
-            if (confirm(`🧾 Factura calculada con éxito para ${familia}\nTotal a pagar: $${totalPagar}.00\n\n¿Deseas enviar esta factura y notificar a la administración por WhatsApp?`)) {
+            // Alerta clara de éxito y opción de mandar la factura por WhatsApp
+            if (confirm(`¡Cita agendada con éxito para ${perroNombre} (${familia})! 🐾\n\nTotal calculado: $${totalPagar}.00\n\n¿Deseas enviar esta factura y notificar por WhatsApp?`)) {
                 window.location.href = urlWp;
             } else {
-                alert(`Reserva guardada. Total calculado: $${totalPagar}.00`);
+                alert(`¡Cita agendada correctamente! Total a pagar: $${totalPagar}.00 guardado en su perfil.`);
             }
         }
     };
