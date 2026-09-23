@@ -29,13 +29,11 @@
                 </ul>
             </section>
 
-            <!-- Directorio de Perfiles (Tipo Red Social) -->
+            <!-- Directorio de Perfiles -->
             <section class="card">
                 <h2>Perfiles Caninos</h2>
                 <input type="text" id="buscador-perros" placeholder="🔍 Buscar perrito por nombre..." style="margin-bottom: 0.8rem;">
-                <div id="directorio-perritos">
-                    <!-- Se llena con JavaScript -->
-                </div>
+                <div id="directorio-perritos"></div>
             </section>
 
             <!-- Sección para que el Cliente Registre a su Perrito con Foto -->
@@ -72,9 +70,7 @@
                     <input type="text" id="dueno" placeholder="Ej. María Pérez" required>
 
                     <label for="perro-select">Selecciona tu Perrito:</label>
-                    <select id="perro-select" required>
-                        <!-- Se llena dinámicamente -->
-                    </select>
+                    <select id="perro-select" required></select>
 
                     <label for="servicio">Tipo de Servicio:</label>
                     <select id="servicio" required>
@@ -86,32 +82,29 @@
                     <label for="fecha">Fecha y Hora:</label>
                     <input type="datetime-local" id="fecha" required>
 
-                    <button type="submit">Agendar y Notificar por WhatsApp</button>
+                    <button type="submit">Agendar Paseo</button>
                 </form>
             </section>
 
-            <!-- Acceso a Modo Administrador (Tú) -->
+            <!-- Acceso a Modo Administrador -->
             <div style="text-align: center; margin-top: 2rem; margin-bottom: 1rem;">
                 <button id="btn-ir-admin" class="btn-secundario" style="background: #a67c52; font-size: 0.85rem; width: auto; padding: 0.5rem 1rem;">🔒 Acceso Paseador / Admin</button>
             </div>
         </div>
 
-        <!-- VISTA 2: PERFIL INDIVIDUAL DEL PERRITO -->
+        <!-- VISTA 2: PERFIL INDIVIDUAL -->
         <div id="vista-perfil" style="display: none;">
             <button id="btn-volver-inicio" class="btn-secundario" style="margin-bottom: 1rem;">← Volver al Inicio</button>
-            <section class="card" id="tarjeta-perfil-detalle">
-                <!-- Se inyecta dinámicamente -->
-            </section>
+            <section class="card" id="tarjeta-perfil-detalle"></section>
         </div>
 
-        <!-- VISTA 3: PANEL DE ADMINISTRACIÓN (CON OPCIÓN DE ELIMINAR PERFILES) -->
+        <!-- VISTA 3: PANEL DE ADMINISTRACIÓN -->
         <div id="vista-admin" style="display: none;">
             <button id="btn-salir-admin" class="btn-secundario" style="margin-bottom: 1rem;">← Salir del Panel</button>
             
             <section class="card">
                 <h2>🔒 Panel de Control (Paseador)</h2>
                 
-                <!-- Formulario para Enviar Reporte de Paseo con Foto -->
                 <form id="form-nuevo-reporte" style="background: #fdfbf7; padding: 1rem; border-radius: 8px; border: 1px solid #d4c3b3; margin-bottom: 1.5rem;">
                     <h3 style="color: #4a3319; margin-top:0;">Enviar Reporte de Paseo con Foto</h3>
                     
@@ -127,13 +120,9 @@
                     <button type="submit" style="margin-top: 1rem; background-color: #2e7d32;">Publicar Reporte y Foto</button>
                 </form>
 
-                <!-- Sección para Administrar y Eliminar Perfiles -->
                 <div style="background: #fff5f5; padding: 1rem; border-radius: 8px; border: 1px solid #feb2b2;">
                     <h3 style="color: #c53030; margin-top:0;">🗑️ Gestión de Perfiles (Eliminar)</h3>
-                    <p style="font-size: 0.85rem; color: #742a2a;">Si un cliente ya no utiliza tus servicios, puedes eliminar su perfil de forma permanente aquí:</p>
-                    <div id="lista-admin-perros" style="margin-top: 0.8rem;">
-                        <!-- Se llena dinámicamente con JavaScript -->
-                    </div>
+                    <div id="lista-admin-perros" style="margin-top: 0.8rem;"></div>
                 </div>
             </section>
         </div>
