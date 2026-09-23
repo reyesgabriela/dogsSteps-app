@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensaje)}`, '_blank');
     };
 
-    // GENERAR FACTURA AUTOMÁTICA DESDE LA RESERVA
+    // GENERAR FACTURA AUTOMÁTICA DESDE LA RESERVA (Con encodeURIComponent para emojis limpios)
     document.getElementById('btn-enviar-factura-auto').onclick = function() {
         const nombrePerro = selectAdminAlerta.value;
         const telCliente = inputAdminTelCliente.value.trim();
@@ -352,10 +352,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (numPerros === 2) {
             totalPagar += 3;
-            detalleExtras += "%0A🐾 Segundo perro: +$3";
+            detalleExtras += "\n🐾 Segundo perro: +$3";
         } else if (numPerros >= 3) {
             totalPagar += 5; 
-            detalleExtras += "%0A🐾 Segundo y tercer perro: +$5";
+            detalleExtras += "\n🐾 Segundo y tercer perro: +$5";
         }
 
         const perroEncontrado = perritos.find(p => p.nombre === nombrePerro);
@@ -371,9 +371,9 @@ document.addEventListener('DOMContentLoaded', () => {
             updateDoc(doc(db, "perritos", perroEncontrado.id), { reportes: perroEncontrado.reportes });
         }
 
-        const mensajeWp = `🐾 *FACTURA / RECIBO - DOG'S STEP'S* 🐾%0A%0A👤 *Cliente / Familia:* ${dueno} (${familia})%0A🐕 *Perrito principal:* ${nombrePerro}%0A📋 *Servicio:* ${servicioSelect}%0A🐶 *Cantidad de perritos:* ${numPerros}${detalleExtras}%0A%0A💰 *TOTAL A PAGAR: $${totalPagar}.00*%0A%0A💳 *Métodos de pago:*%0A• Efectivo%0A• Transferencia Bancoagrícola%0A  Titular: NATALIA REYES%0A  N° de Cuenta: \`3100617261\`%0A%0A¡Gracias por confiar en Dog's Step's! 🐕✨`;
+        const mensajeWp = `🐾 *FACTURA / RECIBO - DOG'S STEP'S* 🐾\n\n👤 *Cliente / Familia:* ${dueno} (${familia})\n🐕 *Perrito principal:* ${nombrePerro}\n📋 *Servicio:* ${servicioSelect}\n🐶 *Cantidad de perritos:* ${numPerros}${detalleExtras}\n\n💰 *TOTAL A PAGAR: $${totalPagar}.00*\n\n💳 *Métodos de pago:*\n• Efectivo\n• Transferencia Bancoagrícola\n  Titular: NATALIA REYES\n  N° de Cuenta: \`3100617261\`\n\n¡Gracias por confiar en Dog's Step's! 🐕✨`;
         
-        window.open(`https://wa.me/${telCliente}?text=${mensajeWp}`, '_blank');
+        window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensajeWp)}`, '_blank');
     };
 
     // PUBLICAR REPORTE (Actualiza en la nube de Firebase)
@@ -489,8 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            const mensajeWp = `¡Hola Dog's Step's! 🐾 Tengo una nueva reserva de espacio:%0A%0A👤 *Dueño:* ${dueno} (${familia})%0A📱 *Teléfono:* ${telDueno}%0A🐕 *Perrito:* ${perroNombre}%0A📋 *Servicio:* ${servicioSelect}%0A🐶 *Perritos:* ${numPerros}%0A📅 *Fecha:* ${fechaFormateada}`;
-            const urlWp = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensajeWp}`;
+            const mensajeWp = `¡Hola Dog's Step's! 🐾 Tengo una nueva reserva de espacio:\n\n👤 *Dueño:* ${dueno} (${familia})\n📱 *Teléfono:* ${telDueno}\n🐕 *Perrito:* ${perroNombre}\n📋 *Servicio:* ${servicioSelect}\n🐶 *Perritos:* ${numPerros}\n📅 *Fecha:* ${fechaFormateada}`;
+            const urlWp = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${encodeURIComponent(mensajeWp)}`;
 
             formReserva.reset();
             cargarPerritosDeNube();
