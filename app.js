@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://wa.me/${telCliente}?text=${mensajeWp}`, '_blank');
     };
 
-    // PUBLICAR REPORTE (Guarda la foto/video en el perfil y abre WhatsApp copiando el texto)
+    // PUBLICAR REPORTE (Soporta Fotos y Videos con actualización instantánea)
     const formNuevoReporte = document.getElementById('form-nuevo-reporte');
     formNuevoReporte.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -371,17 +371,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
 
-                // Copiar texto al portapapeles para pegarlo fácilmente en WhatsApp
+                // Refrescar paneles y directorios al instante sin salir de la app
+                actualizarPanelAdmin();
+                actualizarDirectorio();
+
                 navigator.clipboard.writeText(textoCompleto).catch(() => {});
 
                 const telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
                 const urlWp = `https://wa.me/${telDueno}?text=${encodeURIComponent(textoCompleto)}`;
 
-                alert(`✅ ¡Reporte guardado en el perfil de ${nombrePerro} y copiado al portapapeles!\n\nA continuación se abrirá WhatsApp para enviarlo al dueño (puedes adjuntar la foto recién descargada o seleccionada de tu galería con un toque).`);
+                alert(`✅ ¡Reporte multimedia publicado con éxito para ${nombrePerro}!\n\nEl texto se ha copiado al portapapeles y se abrirá WhatsApp para enviarlo al dueño.`);
 
                 window.open(urlWp, '_blank');
                 formNuevoReporte.reset();
-                mostrarInicio();
             };
 
             if (inputArchivo.files && inputArchivo.files[0]) {
