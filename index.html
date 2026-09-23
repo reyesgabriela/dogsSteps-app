@@ -29,7 +29,7 @@
                 </ul>
             </section>
 
-            <!-- Sección de Formas de Pago con tus Datos Oficiales -->
+            <!-- Sección de Formas de Pago -->
             <section class="card" style="background: #faf6f0;">
                 <h2>💳 Métodos de Pago</h2>
                 <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">Aceptamos las siguientes modalidades:</p>
@@ -53,12 +53,18 @@
                 <div id="directorio-perritos"></div>
             </section>
 
-            <!-- Sección para que el Cliente Registre a su Perrito con Foto -->
+            <!-- Sección para que el Cliente Registre a su Perrito (Con Teléfono Incluido) -->
             <section class="card" style="background: #faf6f0; border: 1px dashed #8c6d53;">
                 <h2>🐾 ¿Nuevo por aquí? Registra a tu perrito</h2>
                 <form id="form-cliente-perro">
                     <label for="c-nombre">Nombre del Perro:</label>
                     <input type="text" id="c-nombre" required>
+
+                    <label for="c-dueno">Nombre del Dueño:</label>
+                    <input type="text" id="c-dueno" placeholder="Ej. María Pérez" required>
+
+                    <label for="c-tel">Tu Número de WhatsApp (para alertas):</label>
+                    <input type="tel" id="c-tel" placeholder="Ej. 50370000000" required>
 
                     <label for="c-raza">Raza:</label>
                     <input type="text" id="c-raza" required>
@@ -83,12 +89,6 @@
             <section class="card">
                 <h2>Agendar un Paseo</h2>
                 <form id="form-reserva">
-                    <label for="dueno">Tu Nombre (Dueño):</label>
-                    <input type="text" id="dueno" placeholder="Ej. María Pérez" required>
-
-                    <label for="tel-dueno">Tu Número de WhatsApp (para alertas):</label>
-                    <input type="tel" id="tel-dueno" placeholder="Ej. 50370000000" required>
-
                     <label for="perro-select">Selecciona tu Perrito:</label>
                     <select id="perro-select" required></select>
 
@@ -118,21 +118,23 @@
             <section class="card" id="tarjeta-perfil-detalle"></section>
         </div>
 
-        <!-- VISTA 3: PANEL DE ADMINISTRACIÓN (CON SOPORTE DE FOTOS Y VIDEOS) -->
+        <!-- VISTA 3: PANEL DE ADMINISTRACIÓN -->
         <div id="vista-admin" style="display: none;">
             <button id="btn-salir-admin" class="btn-secundario" style="margin-bottom: 1rem;">← Salir del Panel</button>
             
             <section class="card">
                 <h2>🔒 Panel de Control (Paseador)</h2>
                 
-                <!-- Controles Rápidos de Alertas de Paseo -->
+                <!-- Alertas automáticas por perrito seleccionado -->
                 <div style="background: #faf6f0; padding: 1rem; border-radius: 8px; border: 1px solid #d4c3b3; margin-bottom: 1.5rem;">
-                    <h3 style="color: #4a3319; margin-top:0;">🚀 Alertas Rápidas de Paseo (WhatsApp)</h3>
+                    <h3 style="color: #4a3319; margin-top:0;">🚀 Alertas Automáticas (WhatsApp)</h3>
+                    <p style="font-size: 0.85rem; color: #5c4033;">Al seleccionar al perrito, su número se detecta solo:</p>
+                    
                     <label for="admin-perro-alerta">Seleccionar Perrito:</label>
                     <select id="admin-perro-alerta" style="margin-bottom: 0.8rem;"></select>
                     
-                    <label for="admin-tel-cliente">WhatsApp del Dueño:</label>
-                    <input type="text" id="admin-tel-cliente" placeholder="Número del cliente" style="margin-bottom: 0.8rem;">
+                    <label for="admin-tel-cliente">WhatsApp del Dueño (Detectado automáticamente):</label>
+                    <input type="text" id="admin-tel-cliente" readonly style="background: #eee; margin-bottom: 0.8rem; font-weight: bold;">
 
                     <div style="display: flex; gap: 0.5rem;">
                         <button type="button" id="btn-iniciar-paseo" style="background-color: #2b6cb0; margin-top:0;">🟢 Iniciar Paseo</button>
@@ -140,7 +142,7 @@
                     </div>
                 </div>
 
-                <!-- Formulario para Enviar Reporte de Paseo con Foto o Video -->
+                <!-- Formulario para Enviar Reporte -->
                 <form id="form-nuevo-reporte" style="background: #fdfbf7; padding: 1rem; border-radius: 8px; border: 1px solid #d4c3b3; margin-bottom: 1.5rem;">
                     <h3 style="color: #4a3319; margin-top:0;">Enviar Reporte con Foto o Video</h3>
                     
@@ -150,7 +152,7 @@
                     <label for="texto-reporte">Detalle del Reporte:</label>
                     <textarea id="texto-reporte" rows="3" placeholder="Ej. ¡Paseo increíble! Hizo sus necesidades y se divirtió mucho." style="width: 100%; padding: 0.7rem; margin-top: 0.3rem; border: 1px solid #d4c3b3; border-radius: 8px; font-family: inherit; box-sizing: border-box;" required></textarea>
 
-                    <label for="archivo-reporte">Adjuntar Archivo Multimedia (Foto o Video temporal):</label>
+                    <label for="archivo-reporte">Adjuntar Archivo Multimedia (Foto o Video):</label>
                     <input type="file" id="archivo-reporte" accept="image/*,video/*" style="background: white; padding: 0.5rem; margin-top: 0.3rem;">
 
                     <button type="submit" style="margin-top: 1rem; background-color: #2e7d32;">Publicar Reporte Multimedia</button>
