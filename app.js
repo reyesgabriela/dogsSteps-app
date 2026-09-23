@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarDirectorio(e.target.value);
     });
 
-    // REGISTRO DE PERRITO (Con alerta asegurada al 100%)
+    // Registro de perrito por el cliente
     const formClientePerro = document.getElementById('form-cliente-perro');
     formClientePerro.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -192,8 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
             perritos.push(nuevoPerro);
             actualizarDirectorio();
             formClientePerro.reset();
-            
-            // Alerta de confirmación inmediata
             alert(`¡Éxito! El perfil de "${nombreIngresado}" (${familiaIngresada}) ha sido creado correctamente en Dog's Step's 🐾.`);
         };
 
@@ -284,6 +282,62 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensaje)}`, '_blank');
     };
 
+    // Botón de envío de factura desde admin
+    document.getElementById('btn-enviar-factura').onclick = function() {
+        const nombrePerro = selectAdminAlerta.value;
+        const telCliente = inputAdminTelCliente.value.trim();
+        const servicioSelect = document.getElementById('admin-servicio-factura').value;
+        const numPerros = parseInt(document.getElementById('admin-num-perros').value);
+        const esDomingoFeriado = document.getElementById('admin-domingo').checked;
+
+        if(!telCliente) {
+            alert("No hay número de WhatsApp registrado para este cliente.");
+            return;
+        }
+
+        let precioBase = 6;
+        if (servicioSelect.includes("30 min")) precioBase = 6;
+        else if (servicioSelect.includes("45 min")) precioBase = 8;
+        else if (servicioSelect.includes("60 min")) precioBase = 10;
+        else if (servicioSelect.includes("Paquete 5")) precioBase = 38;
+        else if (servicioSelect.includes("Paquete 12")) precioBase = 84;
+        else if (servicioSelect.includes("Paquete 20")) precioBase = 130;
+        else if (servicioSelect.includes("Oferta")) precioBase = 4;
+
+        let totalPagar = precioBase;
+        let detalleExtras = "";
+
+        if (numPerros === 2) {
+            totalPagar += 3;
+            detalleExtras += "%0A🐾 Segundo perro: +$3";
+        } else if (numPerros >= 3) {
+            totalPagar += 5; 
+            detalleExtras += "%0A🐾 Segundo y tercer perro: +$5";
+        }
+
+        if (esDomingoFeriado) {
+            totalPagar += 2;
+            detalleExtras += "%0A☀️ Domingo/Feriado: +$2";
+        }
+
+        const perroEncontrado = perritos.find(p => p.nombre === nombrePerro);
+        let dueno = perroEncontrado ? (perroEncontrado.nombreDueno || "Cliente") : "Cliente";
+        let familia = perroEncontrado ? (perroEncontrado.familia || "Familia") : "Familia";
+
+        if(perroEncontrado) {
+            perroEncontrado.reportes.push({
+                texto: `🧾 Factura generada por admin: ${servicioSelect} (${numPerros} perros) - Total: $${totalPagar}.`,
+                media: null,
+                tipoMedia: null
+            });
+            localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
+        }
+
+        const mensajeWp = `🐾 *FACTURA / RECIBO - DOG'S STEP'S* 🐾%0A%0A👤 *Cliente / Familia:* ${dueno} (${familia})%0A🐕 *Perrito principal:* ${nombrePerro}%0A📋 *Servicio:* ${servicioSelect}%0A🐶 *Cantidad de perritos:* ${numPerros}${detalleExtras}%0A%0A💰 *TOTAL A PAGAR: $${totalPagar}.00*%0A%0A💳 *Métodos de pago:*%0A• Efectivo%0A• Transferencia Bancoagrícola%0A  Titular: NATALIA REYES%0A  N° de Cuenta: \`3100617261\`%0A%0A¡Gracias por confiar en Dog's Step's! 🐕✨`;
+        
+        window.open(`https://wa.me/${telCliente}?text=${mensajeWp}`, '_blank');
+    };
+
     const formNuevoReporte = document.getElementById('form-nuevo-reporte');
     formNuevoReporte.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -320,44 +374,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // RESERVA CON CÁLCULO Y ALERTA DE ÉXITO ESTRICTA
+    // RESERVA CON VALIDACIÓN INTELIGENTE DE HORARIOS (ANTICOLISIÓN)
     const formReserva = document.getElementById('form-reserva');
     formReserva.addEventListener('submit', function(e) {
         e.preventDefault();
         const perroNombre = selectPerritoReserva.value;
         const servicioSelect = document.getElementById('servicio').value;
         const numPerros = parseInt(document.getElementById('num-perros-servicio').value);
-        const esDomingoFeriado = document.getElementById('es-domingo-feriado').checked;
         const fecha = document.getElementById('fecha').value;
 
         if(fecha) {
+            // Verificar si ya existe una cita agendada en la misma fecha y hora exacta
+            let citaOcupada = false;
+            perritos.forEach(p => {
+                p.reportes.forEach(r => {
+                    if (r.texto && r.texto.includes(`📅 Cita agendada`) && r.texto.includes(fecha.replace('T', ' a las '))) {
+                        citaOcupada = true;
+                    }
+                });
+            });
+
+            if (citaOcupada) {
+                alert(`❌ Lo sentimos mucho, pero este espacio u horario ya está reservado por otro perrito.\n\nPor favor, selecciona otra fecha u hora disponible para que tu peludito disfrute su paseo con seguridad. 🐾`);
+                return; // Detiene el proceso y no permite cruzar los horarios
+            }
+
             const fechaFormateada = fecha.replace('T', ' a las ');
-            let precioBase = 6;
-
-            if (servicioSelect.includes("30 min")) precioBase = 6;
-            else if (servicioSelect.includes("45 min")) precioBase = 8;
-            else if (servicioSelect.includes("60 min")) precioBase = 10;
-            else if (servicioSelect.includes("Paquete 5")) precioBase = 38;
-            else if (servicioSelect.includes("Paquete 12")) precioBase = 84;
-            else if (servicioSelect.includes("Paquete 20")) precioBase = 130;
-            else if (servicioSelect.includes("Oferta")) precioBase = 4;
-
-            let totalPagar = precioBase;
-            let detalleExtras = "";
-
-            if (numPerros === 2) {
-                totalPagar += 3;
-                detalleExtras += "\n🐾 Segundo perro: +$3";
-            } else if (numPerros >= 3) {
-                totalPagar += 5; 
-                detalleExtras += "\n🐾 Segundo y tercer perro: +$5";
-            }
-
-            if (esDomingoFeriado) {
-                totalPagar += 2;
-                detalleExtras += "\n☀️ Domingo/Feriado: +$2";
-            }
-
+            
             const perroEncontrado = perritos.find(p => p.nombre === perroNombre);
             let dueno = "Cliente";
             let telDueno = TU_NUMERO_WHATSAPP;
@@ -369,24 +412,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 familia = perroEncontrado.familia || "Familia";
                 
                 perroEncontrado.reportes.push({
-                    texto: `🧾 Factura generada: ${servicioSelect} (${numPerros} perros) - Total: $${totalPagar}. Fecha: ${fechaFormateada}`,
+                    texto: `📅 Cita agendada: ${servicioSelect} (${numPerros} perros) para el ${fechaFormateada}.`,
                     media: null,
                     tipoMedia: null
                 });
                 localStorage.setItem('dogs_perritos', JSON.stringify(perritos));
             }
 
-            const mensajeWp = `🐾 *FACTURA / RECIBO - DOG'S STEP'S* 🐾%0A%0A👤 *Cliente / Familia:* ${dueno} (${familia})%0A📱 *Teléfono:* ${telDueno}%0A🐕 *Perrito principal:* ${perroNombre}%0A📋 *Servicio:* ${servicioSelect}%0A🐶 *Cantidad de perritos:* ${numPerros}${detalleExtras}%0A📅 *Fecha del paseo:* ${fechaFormateada}%0A%0A💰 *TOTAL A PAGAR: $${totalPagar}.00*%0A%0A💳 *Métodos de pago:*%0A• Efectivo%0A• Bancoagrícola (Ahorro: 3100617261 - Natalia Reyes)%0A%0A¡Gracias por confiar en Dog's Step's! 🐕✨`;
+            const mensajeWp = `¡Hola Dog's Step's! 🐾 Tengo una nueva reserva de espacio:%0A%0A👤 *Dueño:* ${dueno} (${familia})%0A📱 *Teléfono:* ${telDueno}%0A🐕 *Perrito:* ${perroNombre}%0A📋 *Servicio:* ${servicioSelect}%0A🐶 *Perritos:* ${numPerros}%0A📅 *Fecha:* ${fechaFormateada}`;
             const urlWp = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensajeWp}`;
 
             formReserva.reset();
             actualizarDirectorio();
 
-            // Alerta estricta de confirmación
-            if (confirm(`¡Cita agendada con éxito para ${perroNombre} (${familia})! 🐾\n\nTotal calculado: $${totalPagar}.00\n\n¿Deseas enviar la factura por WhatsApp ahora mismo?`)) {
+            if (confirm(`¡Cita agendada con éxito para ${perroNombre} (${familia})! 🐾\n\n¿Deseas notificar inmediatamente a tu WhatsApp que hay un nuevo cupo reservado?`)) {
                 window.location.href = urlWp;
             } else {
-                alert(`¡Cita agendada con éxito! Total a pagar: $${totalPagar}.00 guardado en el perfil.`);
+                alert(`¡Cita agendada correctamente en el sistema!`);
             }
         }
     });
