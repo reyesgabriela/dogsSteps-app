@@ -14,124 +14,167 @@
         <p>Paseo • Cuidado • Bienestar</p>
     </header>
 
-    <main>
-        <!-- VISTA 1: INICIO / DIRECTORIO Y RESERVAS -->
+    <!-- BARRA DE PESTAÑAS (TABS) PARA LIMPIAR LA VISTA MÓVIL -->
+    <nav class="nav-pestanas" style="display: flex; background: #faf6f0; border-bottom: 2px solid #d4c3b3; overflow-x: auto;">
+        <button type="button" class="tab-btn active" data-target="seccion-tarifas" style="flex: 1; padding: 0.8rem; background: none; border: none; font-weight: bold; color: #4a3319; cursor: pointer; border-bottom: 3px solid #8c6d53; white-space: nowrap;">🏷️ Tarifas y Pagos</button>
+        <button type="button" class="tab-btn" data-target="seccion-acceso" style="flex: 1; padding: 0.8rem; background: none; border: none; font-weight: bold; color: #776050; cursor: pointer; white-space: nowrap;">🔑 Mi Perfil</button>
+        <button type="button" class="tab-btn" data-target="seccion-registro" style="flex: 1; padding: 0.8rem; background: none; border: none; font-weight: bold; color: #776050; cursor: pointer; white-space: nowrap;">🐾 Registrar</button>
+        <button type="button" class="tab-btn" data-target="seccion-reserva" style="flex: 1; padding: 0.8rem; background: none; border: none; font-weight: bold; color: #776050; cursor: pointer; white-space: nowrap;">📅 Agendar</button>
+    </nav>
+
+    <main style="padding-top: 1rem;">
+        <!-- VISTA 1: INICIO / SECCIONES POR PESTAÑAS -->
         <div id="vista-inicio">
-            <!-- Sección de Tarifas Oficiales del Flyer -->
-            <section class="card">
-                <h2>🐾 Nuestros Servicios y Tarifas</h2>
-                <ul class="servicios-lista">
-                    <li>⏱️ <strong>Paseo 30 min (1 perro):</strong> $6</li>
-                    <li>⏱️ <strong>Paseo 45 min (1 perro):</strong> $8</li>
-                    <li>⏱️ <strong>Paseo 60 min (1 perro):</strong> $10</li>
-                    <li>🐾 <strong>Segundo perro (misma familia):</strong> +$3</li>
-                    <li>🐾 <strong>Tercer perro (misma familia):</strong> +$2</li>
-                    <li>☀️ <strong>Domingo o día feriado:</strong> +$2</li>
-                    <li>⭐ <strong>Primer paseo (30 min):</strong> ¡Oferta $4!</li>
-                </ul>
-                <h3 style="color: #4a3319; font-size: 1rem; margin-top: 1rem;">🎁 Paquetes de Paseos (45 min)</h3>
-                <ul class="servicios-lista">
-                    <li>📦 <strong>5 paseos:</strong> $38 <span style="color: #2e7d32; font-weight: bold;">(Ahorras $2)</span></li>
-                    <li>📦 <strong>12 paseos:</strong> $84 <span style="color: #2e7d32; font-weight: bold;">(Ahorras $12)</span></li>
-                    <li>📦 <strong>20 paseos:</strong> $130 <span style="color: #2e7d32; font-weight: bold;">(Ahorras $30)</span></li>
-                </ul>
-            </section>
+            
+            <!-- PESTAÑA 1: TARIFAS Y PAGOS -->
+            <div id="seccion-tarifas" class="tab-content">
+                <section class="card">
+                    <h2>🐾 Nuestros Servicios y Tarifas</h2>
+                    <ul class="servicios-lista">
+                        <li>⏱️ <strong>Paseo 30 min (1 perro):</strong> $6</li>
+                        <li>⏱️ <strong>Paseo 45 min (1 perro):</strong> $8</li>
+                        <li>⏱️ <strong>Paseo 60 min (1 perro):</strong> $10</li>
+                        <li>🐾 <strong>Segundo perro (misma familia):</strong> +$3</li>
+                        <li>🐾 <strong>Tercer perro (misma familia):</strong> +$2</li>
+                        <li>☀️ <strong>Domingo o día feriado:</strong> +$2</li>
+                        <li>⭐ <strong>Primer paseo (30 min):</strong> ¡Oferta $4!</li>
+                    </ul>
+                    <h3 style="color: #4a3319; font-size: 1rem; margin-top: 1rem;">🎁 Paquetes de Paseos (45 min)</h3>
+                    <ul class="servicios-lista">
+                        <li>📦 <strong>5 paseos:</strong> $38 <span style="color: #2e7d32; font-weight: bold;">(Ahorras $2)</span></li>
+                        <li>📦 <strong>12 paseos:</strong> $84 <span style="color: #2e7d32; font-weight: bold;">(Ahorras $12)</span></li>
+                        <li>📦 <strong>20 paseos:</strong> $130 <span style="color: #2e7d32; font-weight: bold;">(Ahorras $30)</span></li>
+                    </ul>
+                </section>
 
-            <!-- Sección de Métodos de Pago y Código QR Visible en la Web -->
-            <section class="card" style="text-align: center;">
-                <h2>💳 Métodos de Pago y Código QR</h2>
-                <p style="margin-bottom: 0.8rem; font-size: 0.9rem; color: #5c4033;">Realiza tus pagos de forma fácil y segura:</p>
-                
-                <div style="background: #faf6f0; padding: 1rem; border-radius: 8px; border: 1px solid #d4c3b3; text-align: left; display: inline-block; width: 100%; box-sizing: border-box; margin-bottom: 1rem;">
-                    <p style="margin: 0.3rem 0;">💵 <strong>Efectivo</strong></p>
-                    <p style="margin: 0.3rem 0;">🏦 <strong>Banco:</strong> Bancoagrícola</p>
-                    <p style="margin: 0.3rem 0;">👤 <strong>Titular:</strong> Natalia Reyes</p>
-                    <p style="margin: 0.3rem 0;">🔢 <strong>N° de Cuenta (Ahorro):</strong> 3100617261</p>
-                </div>
+                <section class="card" style="text-align: center;">
+                    <h2>💳 Métodos de Pago y Código QR</h2>
+                    <p style="margin-bottom: 0.8rem; font-size: 0.9rem; color: #5c4033;">Realiza tus pagos de forma fácil y segura:</p>
+                    
+                    <div style="background: #faf6f0; padding: 1rem; border-radius: 8px; border: 1px solid #d4c3b3; text-align: left; display: inline-block; width: 100%; box-sizing: border-box; margin-bottom: 1rem;">
+                        <p style="margin: 0.3rem 0;">💵 <strong>Efectivo</strong></p>
+                        <p style="margin: 0.3rem 0;">🏦 <strong>Banco:</strong> Bancoagrícola</p>
+                        <p style="margin: 0.3rem 0;">👤 <strong>Titular:</strong> NATALIA REYES</p>
+                        <p style="margin: 0.3rem 0;">🔢 <strong>N° de Cuenta (Ahorro):</strong> 3100617261</p>
+                    </div>
 
-                <div>
-                    <p style="font-size: 0.85rem; color: #8c6d53; margin-bottom: 0.5rem;">Escanea para transferir:</p>
-                    <img src="qr_pago.jpeg" alt="Código QR de Pago" style="max-width: 170px; height: auto; border-radius: 8px; border: 1px solid #d4c3b3;" onerror="this.style.display='none';">
-                </div>
-            </section>
+                    <div style="margin-bottom: 1rem;">
+                        <p style="font-size: 0.85rem; color: #8c6d53; margin-bottom: 0.5rem;">Escanea para transferir:</p>
+                        <img src="qr.jpeg" alt="Código QR de Pago" style="max-width: 170px; height: auto; border-radius: 8px; border: 1px solid #d4c3b3;" onerror="this.style.display='none';">
+                    </div>
 
-            <!-- Directorio de Perfiles por Familia -->
-            <section class="card">
-                <h2>Perfiles Caninos y Familias</h2>
-                <input type="text" id="buscador-perros" placeholder="🔍 Buscar por perrito o familia..." style="margin-bottom: 0.8rem;">
-                <div id="directorio-perritos"></div>
-            </section>
+                    <!-- Botón directo de confirmación de pago por WhatsApp -->
+                    <button type="button" id="btn-whatsapp-pago" style="background-color: #276749; margin-top: 0.5rem;">💬 Confirmar Pago por WhatsApp</button>
+                </section>
+            </div>
 
-            <!-- Registro de Nuevo Perrito / Familia -->
-            <section class="card" style="background: #faf6f0; border: 1px dashed #8c6d53;">
-                <h2>🐾 Registra tu Perrito o Grupo Familiar</h2>
-                <form id="form-cliente-perro">
-                    <label for="c-familia">Nombre de la Familia (Ej. Familia Ramírez):</label>
-                    <input type="text" id="c-familia" required>
+            <!-- PESTAÑA 2: ACCESO PRIVADO CON PIN -->
+            <div id="seccion-acceso" class="tab-content" style="display: none;">
+                <section class="card" style="background: #fdfbf7; border: 1px solid #d4c3b3; text-align: center;">
+                    <h2>🔑 Acceso Privado a tu Perfil</h2>
+                    <p style="font-size: 0.9rem; color: #5c4033; margin-bottom: 0.8rem;">Consulta tus citas próximas y bitácora ingresando tu PIN secreto:</p>
+                    <div style="display: flex; gap: 0.5rem; justify-content: center; max-width: 300px; margin: 0 auto;">
+                        <input type="password" id="input-pin-cliente" placeholder="PIN" maxlength="6" style="text-align: center; font-size: 1.1rem; letter-spacing: 2px; margin: 0;">
+                        <button type="button" id="btn-entrar-pin" style="margin: 0; background: #8c6d53; width: auto; padding: 0.5rem 1rem;">Entrar</button>
+                    </div>
+                </section>
 
-                    <label for="c-nombre">Nombre del Perrito:</label>
-                    <input type="text" id="c-nombre" required>
+                <!-- Directorio interno oculto a clientes comunes, accesible solo mediante admin -->
+                <section class="card" style="display: none;" id="contenedor-directorio-admin">
+                    <h2>Perfiles Caninos y Familias</h2>
+                    <input type="text" id="buscador-perros" placeholder="🔍 Buscar por perrito o familia..." style="margin-bottom: 0.8rem;">
+                    <div id="directorio-perritos"></div>
+                </section>
+            </div>
 
-                    <label for="c-dueno">Nombre del Dueño:</label>
-                    <input type="text" id="c-dueno" required>
+            <!-- PESTAÑA 3: REGISTRO -->
+            <div id="seccion-registro" class="tab-content" style="display: none;">
+                <section class="card" style="background: #faf6f0; border: 1px dashed #8c6d53;">
+                    <h2>🐾 Registra tu Perrito o Grupo Familiar</h2>
+                    <form id="form-cliente-perro">
+                        <label for="c-familia">Nombre de la Familia (Ej. Familia Ramírez):</label>
+                        <input type="text" id="c-familia" required>
 
-                    <label for="c-tel">Tu WhatsApp (para alertas):</label>
-                    <input type="tel" id="c-tel" placeholder="Ej. 50373484771" required>
+                        <label for="c-nombre">Nombre del Perrito:</label>
+                        <input type="text" id="c-nombre" required>
 
-                    <label for="c-raza">Raza:</label>
-                    <input type="text" id="c-raza" required>
+                        <label for="c-dueno">Nombre del Dueño:</label>
+                        <input type="text" id="c-dueno" required>
 
-                    <label for="c-edad">Edad:</label>
-                    <input type="text" id="c-edad" placeholder="Ej. 2 años" required>
+                        <label for="c-tel">Tu WhatsApp (para alertas):</label>
+                        <input type="tel" id="c-tel" placeholder="Ej. 50373484771" required>
 
-                    <label for="c-direccion">Dirección de Recolección:</label>
-                    <input type="text" id="c-direccion" required>
+                        <label for="c-pin">Crea un PIN secreto (para ver tu perfil después):</label>
+                        <input type="password" id="c-pin" placeholder="Ej. 1234" maxlength="6" required style="letter-spacing: 2px;">
 
-                    <label for="c-notas">Necesidades Especiales / Notas:</label>
-                    <input type="text" id="c-notas" required>
+                        <label for="c-raza">Raza:</label>
+                        <input type="text" id="c-raza" required>
 
-                    <label for="c-foto">Foto de Perfil (Opcional):</label>
-                    <input type="file" id="c-foto" accept="image/*" style="background: white; padding: 0.5rem; margin-top: 0.3rem;">
+                        <label for="c-edad">Edad:</label>
+                        <input type="text" id="c-edad" placeholder="Ej. 2 años" required>
 
-                    <button type="submit" class="btn-secundario" style="margin-top: 0.8rem;">Registrar en Dog's Step's</button>
-                </form>
-            </section>
+                        <label for="c-direccion">Dirección de Recolección:</label>
+                        <input type="text" id="c-direccion" required>
 
-            <!-- Sección de Reservas -->
-            <section class="card">
-                <h2>Agendar un Paseo</h2>
-                <form id="form-reserva">
-                    <label for="perro-select">Selecciona el Perrito:</label>
-                    <select id="perro-select" required></select>
+                        <label for="c-notas">Necesidades Especiales / Notas:</label>
+                        <input type="text" id="c-notas" required>
 
-                    <label for="servicio">Tipo de Servicio o Paquete:</label>
-                    <select id="servicio" required>
-                        <option value="Paseo 30 min ($6)">Paseo 30 minutos ($6)</option>
-                        <option value="Paseo 45 min ($8)">Paseo 45 minutos ($8)</option>
-                        <option value="Paseo 60 min ($10)">Paseo 60 minutos ($10)</option>
-                        <option value="Paquete 5 paseos ($38)">Paquete 5 paseos 45 min ($38)</option>
-                        <option value="Paquete 12 paseos ($84)">Paquete 12 paseos 45 min ($84)</option>
-                        <option value="Paquete 20 paseos ($130)">Paquete 20 paseos 45 min ($130)</option>
-                        <option value="Primer Paseo Oferta ($4)">Primer Paseo 30 min - Oferta ($4)</option>
-                    </select>
+                        <label for="c-foto">Foto de Perfil (Opcional):</label>
+                        <input type="file" id="c-foto" accept="image/*" style="background: white; padding: 0.5rem; margin-top: 0.3rem;">
 
-                    <label for="num-perros-servicio">¿Cuántos perritos van en este paseo?</label>
-                    <select id="num-perros-servicio">
-                        <option value="1">1 Perrito (Precio base)</option>
-                        <option value="2">2 Perritos (+$3 segundo perro)</option>
-                        <option value="3">3 Perritos (+$3 segundo +$2 tercer perro)</option>
-                    </select>
+                        <button type="submit" class="btn-secundario" style="margin-top: 0.8rem;">Registrar en Dog's Step's</button>
+                    </form>
+                </section>
+            </div>
 
-                    <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.8rem; font-weight: normal; cursor: pointer;">
-                        <input type="checkbox" id="es-domingo-feriado" style="width: auto; margin: 0;"> ☀️ ¿Es Domingo o Día Feriado? (+$2)
-                    </label>
+            <!-- PESTAÑA 4: AGENDAR -->
+            <div id="seccion-reserva" class="tab-content" style="display: none;">
+                <section class="card">
+                    <h2>Agendar un Paseo</h2>
+                    <form id="form-reserva">
+                        <label for="perro-select">Selecciona el Perrito:</label>
+                        <select id="perro-select" required></select>
 
-                    <label for="fecha">Fecha y Hora:</label>
-                    <input type="datetime-local" id="fecha" required>
+                        <label for="servicio">Tipo de Servicio o Paquete:</label>
+                        <select id="servicio" required>
+                            <option value="Paseo 30 min ($6)">Paseo 30 minutos ($6)</option>
+                            <option value="Paseo 45 min ($8)">Paseo 45 minutos ($8)</option>
+                            <option value="Paseo 60 min ($10)">Paseo 60 minutos ($10)</option>
+                            <option value="Paquete 5 paseos ($38)" data-es-paquete="true">📦 Paquete 5 paseos 45 min ($38)</option>
+                            <option value="Paquete 12 paseos ($84)" data-es-paquete="true">📦 Paquete 12 paseos 45 min ($84)</option>
+                            <option value="Paquete 20 paseos ($130)" data-es-paquete="true">📦 Paquete 20 paseos 45 min ($130)</option>
+                            <option value="Primer Paseo Oferta ($4)" id="opcion-oferta">⭐ Primer Paseo 30 min - Oferta ($4)</option>
+                        </select>
 
-                    <button type="submit">Agendar</button>
-                </form>
-            </section>
+                        <label for="num-perros-servicio">¿Cuántos perritos van en este paseo?</label>
+                        <select id="num-perros-servicio">
+                            <option value="1">1 Perrito (Precio base)</option>
+                            <option value="2">2 Perritos (+$3 segundo perro)</option>
+                            <option value="3">3 Perritos (+$3 segundo +$2 tercer perro)</option>
+                        </select>
+
+                        <div id="contenedor-paquete-dias" style="display: none; background: #faf6f0; padding: 0.8rem; border-radius: 6px; border: 1px solid #d4c3b3; margin-top: 0.8rem;">
+                            <label style="color: #4a3319; font-weight: bold; margin-bottom: 0.3rem;">📅 Días de la semana preferidos:</label>
+                            <input type="text" id="paquete-dias" placeholder="Ej. Lunes, Miércoles y Viernes" style="margin-bottom: 0.5rem;">
+                            
+                            <label style="color: #4a3319; font-weight: bold; margin-bottom: 0.3rem;">🕒 Hora habitual del paseo:</label>
+                            <input type="text" id="paquete-hora" placeholder="Ej. 4:00 PM">
+                        </div>
+
+                        <div id="contenedor-fecha-unica" style="margin-top: 0.8rem;">
+                            <label for="fecha">Fecha y Hora del Paseo:</label>
+                            <input type="datetime-local" id="fecha">
+                        </div>
+
+                        <!-- CALCULADORA DINÁMICA DE PRECIO EN TIEMPO REAL -->
+                        <div id="resumen-precio-dinamico" style="background: #fdfbf7; padding: 0.8rem; border-radius: 6px; border: 1px solid #d4c3b3; margin: 1rem 0; font-size: 0.9rem; color: #4a3319;">
+                            💰 <strong>Total estimado:</strong> <span id="span-total-calculado">$6.00</span>
+                        </div>
+
+                        <button type="submit" style="margin-top: 0.5rem;">Agendar / Contratar</button>
+                    </form>
+                </section>
+            </div>
 
             <!-- Acceso Administrador -->
             <div style="text-align: center; margin-top: 2rem; margin-bottom: 1rem;">
@@ -160,7 +203,6 @@
                     <label for="admin-tel-cliente">WhatsApp del Dueño:</label>
                     <input type="text" id="admin-tel-cliente" readonly style="background: #eee; margin-bottom: 0.8rem; font-weight: bold;">
 
-                    <!-- Factura Automática -->
                     <div style="background: #fff; padding: 0.8rem; border-radius: 6px; border: 1px solid #d4c3b3; margin-bottom: 1rem;">
                         <h4 style="margin: 0 0 0.5rem 0; color: #4a3319; font-size: 0.95rem;">🧾 Factura Automática de la Reserva</h4>
                         <div id="info-ultima-reserva" style="font-size: 0.85rem; color: #5c4033; margin-bottom: 0.6rem; background: #fdfbf7; padding: 0.5rem; border-radius: 4px;">
@@ -188,7 +230,7 @@
                 </form>
 
                 <div style="background: #fff5f5; padding: 1rem; border-radius: 8px; border: 1px solid #feb2b2;">
-                    <h3 style="color: #c53030; margin-top:0;">🗑️ Gestión de Perfiles (Eliminar)</h3>
+                    <h3 style="color: #c53030; margin-top:0;">🗑️ Gestión de Perfiles y Cupos</h3>
                     <div id="lista-admin-perros" style="margin-top: 0.8rem;"></div>
                 </div>
             </section>
