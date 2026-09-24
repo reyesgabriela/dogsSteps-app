@@ -458,10 +458,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 infoUltimaReserva.innerHTML = `📋 <strong>Servicio:</strong> ${r.servicio}<br>🐶 <strong>Perritos:</strong> ${r.numPerros}<br>📅 <strong>Detalle:</strong> ${r.fecha}`;
                 infoUltimaReserva.dataset.servicio = r.servicio;
                 infoUltimaReserva.dataset.numPerros = r.numPerros;
+                infoUltimaReserva.dataset.fecha = r.fecha;
             } else {
                 infoUltimaReserva.innerHTML = `⚠️ Este perrito aún no tiene una reserva registrada en el sistema.`;
                 infoUltimaReserva.dataset.servicio = "";
                 infoUltimaReserva.dataset.numPerros = "1";
+                infoUltimaReserva.dataset.fecha = "";
             }
         };
 
@@ -521,6 +523,44 @@ document.addEventListener('DOMContentLoaded', () => {
             listaAdminPerros.appendChild(fila);
         });
     }
+
+    // BOTÓN DE RESPUESTA PREDETERMINADA AL CLIENTE CON EL MENSAJE SOLICITADO
+    document.getElementById('btn-responder-reserva').onclick = function() {
+        const nombrePerro = selectAdminAlerta.value;
+        const telCliente = inputAdminTelCliente.value.trim();
+        const servicioSelect = infoUltimaReserva.dataset.servicio;
+        const numPerros = parseInt(infoUltimaReserva.dataset.numPerros || "1");
+        const fechaDetalle = infoUltimaReserva.dataset.fecha || "pronto";
+
+        if(!telCliente) {
+            alert("No hay número de WhatsApp registrado para este cliente.");
+            return;
+        }
+        if(!servicioSelect) {
+            alert("Este perrito no tiene una reserva registrada para responder automáticamente.");
+            return;
+        }
+
+        let precioBase = 6;
+        if (servicioSelect.includes("30 min")) precioBase = 6;
+        else if (servicioSelect.includes("45 min")) precioBase = 8;
+        else if (servicioSelect.includes("60 min")) precioBase = 10;
+        else if (servicioSelect.includes("Paquete 5")) precioBase = 38;
+        else if (servicioSelect.includes("Paquete 12")) precioBase = 84;
+        else if (servicioSelect.includes("Paquete 20")) precioBase = 130;
+        else if (servicioSelect.includes("Oferta")) precioBase = 4;
+
+        let totalPagar = precioBase;
+        if (numPerros === 2) totalPagar += 3;
+        else if (numPerros >= 3) totalPagar += 5;
+
+        const perroEncontrado = perritos.find(p => p.nombre === nombrePerro);
+        let dueno = perroEncontrado ? (perroEncontrado.nombreDueno || "Estimado cliente") : "Estimado cliente";
+
+        const mensajeRespuesta = `¡Hola ${dueno}! 🐾 Qué alegría saludarte. ¡Recibido! Ya quedó agendado el servicio de ${servicioSelect} para ${nombrePerro} (${fechaDetalle}) por un total de $${totalPagar}.00.\n\nTe recordamos que puedes realizar tu pago en efectivo o por transferencia a nuestra cuenta de Bancoagrícola (Cuenta de Ahorro N°: 3100617261 a nombre de NATALIA REYES).\n\n¡Nos vemos pronto con la mejor energía para consentir a ${nombrePerro}! 🐕✨`;
+
+        window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensajeRespuesta)}`, '_blank');
+    };
 
     document.getElementById('btn-iniciar-paseo').onclick = function() {
         const nombrePerro = selectAdminAlerta.value;
@@ -584,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let familia = perroEncontrado ? (perroEncontrado.familia || "Familia") : "Familia";
 
         if(perroEncontrado) {
-            if (!perroEncontrado.reportes) perroEncontrado.reportes = [];
+            if (!perroEncontrado.reportes) perritoEncontrado.reportes = [];
             perroEncontrado.reportes.push({
                 texto: `🧾 Factura enviada: ${servicioSelect} (${numPerros} perros) - Total: $${totalPagar}.`,
                 urlMapa: null
@@ -676,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             const fecha = inputFecha.value;
             if (!fecha) {
-                alert("Por favor, selecciona una fecha y hora.");
+                alert("Por fecha y hora.");
                 return;
             }
             detalleFechaTexto = fecha.replace('T', ' a las ');
@@ -702,14 +742,14 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             perroEncontrado.ultimaReserva = nuevaCita;
-            if (!perroEncontrado.citas) perroEncontrado.citas = [];
+            if (!perroEncontrado.citas) perritoEncontrado.citas = [];
             perroEncontrado.citas.push(nuevaCita);
 
             if (esPaquete) {
                 perroEncontrado.paqueteActivo = nuevoPaqueteActivo;
             }
 
-            if (!perroEncontrado.reportes) perroEncontrado.reportes = [];
+            if (!perroEncontrado.reportes) perritoEncontrado.reportes = [];
             perroEncontrado.reportes.push({
                 texto: `📅 ${esPaquete ? 'Paquete contratado' : 'Cita agendada'}: ${servicioSelect} (${numPerros} perros) - ${detalleFechaTexto}.`,
                 urlMapa: null
