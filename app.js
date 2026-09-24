@@ -13,7 +13,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Función ligera para comprimir solo fotos pequeñas de perfil de perrito
 function comprimirFotoPerfil(file, callback) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -44,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const vistaAdmin = document.getElementById('vista-admin');
     
     const directorioPerritos = document.getElementById('directorio-perritos');
+    const contenedorDirectorioAdmin = document.getElementById('contenedor-directorio-admin');
     const selectPerritoReserva = document.getElementById('perro-select');
     const selectPerritoReporte = document.getElementById('reporte-perro-select');
     const selectAdminAlerta = document.getElementById('admin-perro-alerta');
@@ -53,6 +53,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const buscador = document.getElementById('buscador-perros');
     const tarjetaPerfilDetalle = document.getElementById('tarjeta-perfil-detalle');
 
+    const selectServicio = document.getElementById('servicio');
+    const selectNumPerros = document.getElementById('num-perros-servicio');
+    const spanTotalCalculado = document.getElementById('span-total-calculado');
+    const contenedorPaqueteDias = document.getElementById('contenedor-paquete-dias');
+    const contenedorFechaUnica = document.getElementById('contenedor-fecha-unica');
+    const inputFecha = document.getElementById('fecha');
+    const inputPaqueteDias = document.getElementById('paquete-dias');
+    const inputPaqueteHora = document.getElementById('paquete-hora');
+    const opcionOferta = document.getElementById('opcion-oferta');
+
+    const inputPinCliente = document.getElementById('input-pin-cliente');
+    const btnEntrarPin = document.getElementById('btn-entrar-pin');
+    const btnWhatsappPago = document.getElementById('btn-whatsapp-pago');
+
+    // CONTROL DE PESTAÑAS (TABS)
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabButtons.forEach(b => {
+                b.style.color = '#776050';
+                b.style.borderBottom = 'none';
+            });
+            tabContents.forEach(c => c.style.display = 'none');
+
+            btn.style.color = '#4a3319';
+            btn.style.borderBottom = '3px solid #8c6d53';
+            const targetId = btn.dataset.target;
+            document.getElementById(targetId).style.display = 'block';
+        });
+    });
+
     document.getElementById('titulo-app').addEventListener('click', mostrarInicio);
     document.getElementById('btn-volver-inicio').addEventListener('click', mostrarInicio);
     document.getElementById('btn-salir-admin').addEventListener('click', mostrarInicio);
@@ -60,10 +93,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-ir-admin').addEventListener('click', () => {
         const pass = prompt("Ingresa tu contraseña de paseador:");
         if (pass === PASSWORD_ADMIN) {
+            contenedorDirectorioAdmin.style.display = 'block';
             mostrarAdmin();
         } else if (pass !== null) {
             alert("Contraseña incorrecta.");
         }
+    });
+
+    // BOTÓN DE CONFIRMACIÓN DE PAGO POR WHATSAPP
+    btnWhatsappPago.addEventListener('click', () => {
+        const msg = `¡Hola Dog's Step's! 🐾 Acabo de realizar mi transferencia por Bancoagrícola. Aquí te adjunto el comprobante de pago 🧾👇`;
+        window.open(`https://wa.me/${TU_NUMERO_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
     });
 
     async function cargarPerritosDeNube() {
@@ -83,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         vistaInicio.style.display = 'block';
         vistaPerfil.style.display = 'none';
         vistaAdmin.style.display = 'none';
+        contenedorDirectorioAdmin.style.display = 'none';
         cargarPerritosDeNube();
     }
 
@@ -92,6 +133,23 @@ document.addEventListener('DOMContentLoaded', () => {
         vistaAdmin.style.display = 'block';
         cargarPerritosDeNube().then(() => actualizarPanelAdmin());
     }
+
+    // ACCESO CON PIN PARA CLIENTES
+    btnEntrarPin.addEventListener('click', () => {
+        const pinIngresado = inputPinCliente.value.trim();
+        if (!pinIngresado) {
+            alert("Por favor, ingresa tu PIN secreto.");
+            return;
+        }
+
+        const perritoEncontrado = perritos.find(p => p.pin === pinIngresado);
+        if (perritoEncontrado) {
+            inputPinCliente.value = '';
+            abrirPerfilIndividual(perritoEncontrado);
+        } else {
+            alert("❌ PIN incorrecto o no encontrado. Verifica con Dog's Step's si tienes dudas.");
+        }
+    });
 
     function actualizarDirectorio(filtro = '') {
         directorioPerritos.innerHTML = '';
@@ -104,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
         if (perritosFiltrados.length === 0) {
-            directorioPerritos.innerHTML = '<p style="color: #776050; text-align: center;">No se encontró ningún registro.</p>';
+            directorioPerritos.innerHTML = '<p style="color: #776050; text-align: center;">No hay registros.</p>';
             return;
         }
 
@@ -128,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <small style="color: #776050;">${p.raza} • ${p.edad}</small>
                     </div>
                 </div>
-                <span style="color: #4a3319; font-weight: bold; font-size: 0.9rem;">Ver Perfil →</span>
+                <span style="color: #4a3319; font-weight: bold; font-size: 0.9rem;">Ver →</span>
             `;
 
             div.addEventListener('click', () => {
@@ -137,9 +195,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
             directorioPerritos.appendChild(div);
         });
+
+        verificarOfertaPrimerPaseo();
+        calcularPrecioDinamico();
     }
 
-    // VISTA DE PERFIL INDIVIDUAL CON CITAS PRÓXIMAS, PASADAS Y REPORTES
+    function verificarOfertaPrimerPaseo() {
+        const nombreSeleccionado = selectPerritoReserva.value;
+        const perritoActual = perritos.find(p => p.nombre === nombreSeleccionado);
+
+        if (perritoActual) {
+            const tieneCitasPrevias = perritoActual.citas && perritoActual.citas.length > 0;
+            if (tieneCitasPrevias) {
+                opcionOferta.style.display = 'none';
+                if (selectServicio.value.includes("Oferta")) {
+                    selectServicio.selectedIndex = 0;
+                }
+            } else {
+                opcionOferta.style.display = 'block';
+            }
+        }
+        calcularPrecioDinamico();
+    }
+
+    selectPerritoReserva.addEventListener('change', verificarOfertaPrimerPaseo);
+
+    // CALCULADORA DINÁMICA DE PRECIO EN TIEMPO REAL
+    function calcularPrecioDinamico() {
+        const servicioVal = selectServicio.value;
+        const numP = parseInt(selectNumPerros.value || "1");
+
+        let base = 6;
+        if (servicioVal.includes("30 min")) base = 6;
+        else if (servicioVal.includes("45 min")) base = 8;
+        else if (servicioVal.includes("60 min")) base = 10;
+        else if (servicioVal.includes("Paquete 5")) base = 38;
+        else if (servicioVal.includes("Paquete 12")) base = 84;
+        else if (servicioVal.includes("Paquete 20")) base = 130;
+        else if (servicioVal.includes("Oferta")) base = 4;
+
+        if (numP === 2) base += 3;
+        else if (numP >= 3) base += 5;
+
+        spanTotalCalculado.textContent = `$${base}.00`;
+    }
+
+    selectServicio.addEventListener('change', function() {
+        calcularPrecioDinamico();
+        const opcionSeleccionada = selectServicio.options[selectServicio.selectedIndex];
+        const esPaquete = opcionSeleccionada.dataset.esPaquete === "true";
+
+        if (esPaquete) {
+            contenedorPaqueteDias.style.display = 'block';
+            contenedorFechaUnica.style.display = 'none';
+            inputFecha.removeAttribute('required');
+            inputPaqueteDias.setAttribute('required', 'true');
+            inputPaqueteHora.setAttribute('required', 'true');
+        } else {
+            contenedorPaqueteDias.style.display = 'none';
+            contenedorFechaUnica.style.display = 'block';
+            inputFecha.setAttribute('required', 'true');
+            inputPaqueteDias.removeAttribute('required');
+            inputPaqueteHora.removeAttribute('required');
+        }
+    });
+
+    selectNumPerros.addEventListener('change', calcularPrecioDinamico);
+
+    // PERFIL INDIVIDUAL CON ESTADO VACÍO INTERACTIVO (CALL TO ACTION)
     function abrirPerfilIndividual(p) {
         vistaInicio.style.display = 'none';
         vistaPerfil.style.display = 'block';
@@ -149,26 +272,35 @@ document.addEventListener('DOMContentLoaded', () => {
             `<img src="${p.fotoPerfil}" class="avatar-perfil-grande">` : 
             `<div style="font-size: 3.5rem; background: #faf6f0; width: 90px; height: 90px; line-height: 90px; border-radius: 50%; margin: 0 auto 0.5rem auto; border: 3px solid #4a3319; text-align: center;">🐕</div>`;
 
-        // Procesar citas y reportes
         let citasProximasHtml = '';
         let historialCitasHtml = '';
         let reportesHtml = '';
-
         const ahora = new Date();
 
         if (p.citas && p.citas.length > 0) {
             p.citas.forEach(cita => {
                 const fechaCitaObj = new Date(cita.fechaOriginal || cita.fecha);
-                const itemCita = `<div style="background: #faf6f0; padding: 0.6rem; border-radius: 6px; margin-bottom: 0.4rem; border-left: 4px solid #a67c52;">📅 <strong>${cita.servicio}</strong> (${cita.numPerros} perritos)<br>🕒 <strong>Fecha:</strong> ${cita.fecha}</div>`;
+                const itemCita = `<div style="background: #faf6f0; padding: 0.6rem; border-radius: 6px; margin-bottom: 0.4rem; border-left: 4px solid #a67c52;">📅 <strong>${cita.servicio}</strong> (${cita.numPerros} perritos)<br>🕒 <strong>Detalle:</strong> ${cita.fecha}</div>`;
                 
-                if (fechaCitaObj >= ahora) {
+                if (cita.esPaquete || fechaCitaObj >= ahora) {
                     citasProximasHtml += itemCita;
                 } else {
                     historialCitasHtml += itemCita;
                 }
             });
         }
-        if (!citasProximasHtml) citasProximasHtml = '<p style="color: #776050; font-size: 0.9rem;">No hay citas próximas programadas.</p>';
+
+        // Estado vacío cálido e interactivo
+        if (!citasProximasHtml) {
+            citasProximasHtml = `
+                <div style="text-align: center; padding: 1.5rem; background: #faf6f0; border-radius: 8px; border: 1px dashed #d4c3b3;">
+                    <p style="font-size: 2rem; margin: 0;">🐶💤</p>
+                    <p style="font-weight: bold; color: #4a3319; margin: 0.5rem 0;">¡Aún no hay paseos programados para ${p.nombre}!</p>
+                    <p style="font-size: 0.85rem; color: #776050; margin-bottom: 0.8rem;">¿Qué tal si le regalamos un paseo al aire libre hoy?</p>
+                    <button type="button" id="btn-ir-agendar-perfil" style="background: #2e7d32; font-size: 0.85rem; width: auto; padding: 0.4rem 1rem;">📅 Agendar Paseo Ahora</button>
+                </div>`;
+        }
+
         if (!historialCitasHtml) historialCitasHtml = '<p style="color: #776050; font-size: 0.9rem;">No hay historial de citas anteriores.</p>';
 
         if (p.reportes && p.reportes.length > 0) {
@@ -194,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p style="margin: 0.3rem 0;">⚠️ <strong>Notas:</strong> ${p.notas}</p>
             </div>
 
-            <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-top: 1.2rem;">✨ Citas Próximas</h3>
+            <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-top: 1.2rem;">✨ Citas Próximas / Paquetes Activos</h3>
             <div style="margin-top: 0.5rem; margin-bottom: 1rem;">${citasProximasHtml}</div>
 
             <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-top: 1.2rem;">📋 Historial de Citas Pasadas</h3>
@@ -203,19 +335,42 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-top: 1.2rem;">📸 Bitácora de Reportes</h3>
             <div style="margin-top: 0.5rem;">${reportesHtml}</div>
         `;
+
+        // Enlace del botón interactivo del estado vacío para saltar a agendar seleccionando al perrito
+        const btnAgendarPerfil = document.getElementById('btn-ir-agendar-perfil');
+        if (btnAgendarPerfil) {
+            btnAgendarPerfil.addEventListener('click', () => {
+                // Activar pestaña de agendar
+                tabButtons.forEach(b => {
+                    b.style.color = '#776050';
+                    b.style.borderBottom = 'none';
+                });
+                tabContents.forEach(c => c.style.display = 'none');
+                
+                const btnAgendarTab = document.querySelector('[data-target="seccion-reserva"]');
+                btnAgendarTab.style.color = '#4a3319';
+                btnAgendarTab.style.borderBottom = '3px solid #8c6d53';
+                document.getElementById('seccion-reserva').style.display = 'block';
+
+                vistaInicio.style.display = 'block';
+                vistaPerfil.style.display = 'none';
+                selectPerritoReserva.value = p.nombre;
+                verificarOfertaPrimerPaseo();
+            });
+        }
     }
 
     buscador.addEventListener('input', (e) => {
         actualizarDirectorio(e.target.value);
     });
 
-    // Registrar nuevo perrito con foto de perfil comprimida
     const formClientePerro = document.getElementById('form-cliente-perro');
     formClientePerro.addEventListener('submit', function(e) {
         e.preventDefault();
         const inputFotoPerfil = document.getElementById('c-foto');
         const nombreIngresado = document.getElementById('c-nombre').value;
         const familiaIngresada = document.getElementById('c-familia').value;
+        const pinIngresado = document.getElementById('c-pin').value.trim();
         
         const guardarEnNube = async (urlFotoPerfil) => {
             const nuevoPerro = {
@@ -223,6 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 familia: familiaIngresada,
                 nombreDueno: document.getElementById('c-dueno').value,
                 telefonoDueno: document.getElementById('c-tel').value,
+                pin: pinIngresado,
                 raza: document.getElementById('c-raza').value,
                 edad: document.getElementById('c-edad').value,
                 direccion: document.getElementById('c-direccion').value,
@@ -236,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 await addDoc(collection(db, "perritos"), nuevoPerro);
                 formClientePerro.reset();
-                alert(`¡Éxito! El perfil de "${nombreIngresado}" (${familiaIngresada}) ha sido creado y guardado en la nube 🐾.`);
+                alert(`¡Éxito! El perfil de "${nombreIngresado}" ha sido creado. Recuerda tu PIN secreto para entrar a tu perfil 🐾.`);
                 cargarPerritosDeNube();
             } catch (error) {
                 console.error("Error al guardar en Firebase:", error);
@@ -265,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const opt2 = document.createElement('option');
             opt2.value = p.nombre;
-            opt2.textContent = `${p.nombre} (${p.familia})`;
+            opt2.textContent = `${p.nombre} (${p.familia}) [PIN: ${p.pin || 'N/A'}]`;
             opt2.dataset.tel = p.telefonoDueno || "";
             selectAdminAlerta.appendChild(opt2);
         });
@@ -277,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const perritoActual = perritos.find(p => p.nombre === selectAdminAlerta.value);
             if (perritoActual && perritoActual.ultimaReserva) {
                 const r = perritoActual.ultimaReserva;
-                infoUltimaReserva.innerHTML = `📋 <strong>Servicio:</strong> ${r.servicio}<br>🐶 <strong>Perritos:</strong> ${r.numPerros}<br>📅 <strong>Fecha:</strong> ${r.fecha}`;
+                infoUltimaReserva.innerHTML = `📋 <strong>Servicio:</strong> ${r.servicio}<br>🐶 <strong>Perritos:</strong> ${r.numPerros}<br>📅 <strong>Detalle:</strong> ${r.fecha}`;
                 infoUltimaReserva.dataset.servicio = r.servicio;
                 infoUltimaReserva.dataset.numPerros = r.numPerros;
             } else {
@@ -301,13 +457,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const fila = document.createElement('div');
             fila.className = 'admin-perfil-fila';
             fila.innerHTML = `
-                <div>
-                    <strong>🐕 ${p.nombre}</strong> <small style="color: #666;">[${p.familia}]</small>
+                <div style="margin-bottom: 0.5rem;">
+                    <strong>🐕 ${p.nombre}</strong> <small style="color: #666;">[${p.familia}] - PIN: <code>${p.pin || 'Sin PIN'}</code></small>
                 </div>
-                <button class="btn-peligro" data-id="${p.id}">Eliminar</button>
+                <div style="display: flex; gap: 0.4rem;">
+                    <button class="btn-secundario btn-cancelar-cita" data-id="${p.id}" style="background: #b7791f; font-size: 0.8rem; padding: 0.3rem 0.6rem; margin:0;">Cancelar Citas / Paquete</button>
+                    <button class="btn-peligro btn-eliminar-perro" data-id="${p.id}" style="font-size: 0.8rem; padding: 0.3rem 0.6rem; margin:0;">Eliminar Perfil</button>
+                </div>
             `;
 
-            fila.querySelector('button').addEventListener('click', async () => {
+            fila.querySelector('.btn-cancelar-cita').addEventListener('click', async () => {
+                if (confirm(`¿Deseas cancelar las citas pendientes o paquetes activos de ${p.nombre} para liberar el cupo?`)) {
+                    try {
+                        await updateDoc(doc(db, "perritos", p.id), {
+                            citas: [],
+                            ultimaReserva: null
+                        });
+                        await cargarPerritosDeNube();
+                        actualizarPanelAdmin();
+                        alert(`¡Citas canceladas con éxito para ${p.nombre}! El cupo ha quedado libre.`);
+                    } catch (error) {
+                        console.error("Error al cancelar citas:", error);
+                    }
+                }
+            });
+
+            fila.querySelector('.btn-eliminar-perro').addEventListener('click', async () => {
                 if (confirm(`¿Estás segura de eliminar permanentemente a ${p.nombre} de la nube?`)) {
                     try {
                         await deleteDoc(doc(db, "perritos", p.id));
@@ -346,7 +521,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensaje)}`, '_blank');
     };
 
-    // GENERAR FACTURA AUTOMÁTICA
     document.getElementById('btn-enviar-factura-auto').onclick = function() {
         const nombrePerro = selectAdminAlerta.value;
         const telCliente = inputAdminTelCliente.value.trim();
@@ -399,7 +573,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(mensajeWp)}`, '_blank');
     };
 
-    // PUBLICAR REPORTE Y ABRIR WHATSAPP PARA ADJUNTAR FOTO DIRECTAMENTE DESDE LA CÁMARA
     const formNuevoReporte = document.getElementById('form-nuevo-reporte');
     formNuevoReporte.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -422,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
                 const urlWp = `https://wa.me/${telDueno}?text=${encodeURIComponent(textoCompleto)}`;
 
-                alert(`✅ ¡Reporte guardado! Se abrirá WhatsApp para que adjuntes la foto o tomes la captura al instante.`);
+                alert(`✅ ¡Reporte guardado! Se abrirá WhatsApp para que adjuntes la foto.`);
                 window.open(urlWp, '_blank');
                 formNuevoReporte.reset();
                 mostrarInicio();
@@ -432,65 +605,88 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // RESERVA DEL CLIENTE (Guarda la cita en el listado de citas del perrito)
     const formReserva = document.getElementById('form-reserva');
     formReserva.addEventListener('submit', async function(e) {
         e.preventDefault();
         const perroNombre = selectPerritoReserva.value;
-        const servicioSelect = document.getElementById('servicio').value;
-        const numPerros = parseInt(document.getElementById('num-perros-servicio').value);
-        const fecha = document.getElementById('fecha').value;
+        const servicioSelect = selectServicio.value;
+        const numPerros = parseInt(selectNumPerros.value);
+        
+        const opcionSeleccionada = selectServicio.options[selectServicio.selectedIndex];
+        const esPaquete = opcionSeleccionada.dataset.esPaquete === "true";
 
-        if(fecha) {
-            const fechaFormateada = fecha.replace('T', ' a las ');
-            const perroEncontrado = perritos.find(p => p.nombre === perroNombre);
-            let dueno = "Cliente";
-            let telDueno = TU_NUMERO_WHATSAPP;
-            let familia = "Familia";
+        let detalleFechaTexto = "";
+        let fechaOriginalGuardar = "";
 
-            if(perroEncontrado) {
-                dueno = perroEncontrado.nombreDueno || "Cliente";
-                telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
-                familia = perroEncontrado.familia || "Familia";
-                
-                const nuevaCita = {
-                    servicio: servicioSelect,
-                    numPerros: numPerros,
-                    fecha: fechaFormateada,
-                    fechaOriginal: fecha
-                };
+        if (esPaquete) {
+            const diasTxt = inputPaqueteDias.value.trim();
+            const horaTxt = inputPaqueteHora.value.trim();
+            if (!diasTxt || !horaTxt) {
+                alert("Por favor, ingresa los días y la hora preferidos para el paquete.");
+                return;
+            }
+            detalleFechaTexto = `📦 Paquete - Días: ${diasTxt} a las ${horaTxt}`;
+            fechaOriginalGuardar = new Date().toISOString();
+        } else {
+            const fecha = inputFecha.value;
+            if (!fecha) {
+                alert("Por favor, selecciona una fecha y hora.");
+                return;
+            }
+            detalleFechaTexto = fecha.replace('T', ' a las ');
+            fechaOriginalGuardar = fecha;
+        }
 
-                perroEncontrado.ultimaReserva = nuevaCita;
-                if (!perroEncontrado.citas) perroEncontrado.citas = [];
-                perroEncontrado.citas.push(nuevaCita);
+        const perroEncontrado = perritos.find(p => p.nombre === perroNombre);
+        let dueno = "Cliente";
+        let telDueno = TU_NUMERO_WHATSAPP;
+        let familia = "Familia";
 
-                if (!perroEncontrado.reportes) perroEncontrado.reportes = [];
-                perroEncontrado.reportes.push({
-                    texto: `📅 Cita agendada: ${servicioSelect} (${numPerros} perros) para el ${fechaFormateada}.`
+        if(perroEncontrado) {
+            dueno = perroEncontrado.nombreDueno || "Cliente";
+            telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
+            familia = perroEncontrado.familia || "Familia";
+            
+            const nuevaCita = {
+                servicio: servicioSelect,
+                numPerros: numPerros,
+                fecha: detalleFechaTexto,
+                fechaOriginal: fechaOriginalGuardar,
+                esPaquete: esPaquete
+            };
+
+            perroEncontrado.ultimaReserva = nuevaCita;
+            if (!perroEncontrado.citas) perroEncontrado.citas = [];
+            perroEncontrado.citas.push(nuevaCita);
+
+            if (!perroEncontrado.reportes) perroEncontrado.reportes = [];
+            perroEncontrado.reportes.push({
+                texto: `📅 ${esPaquete ? 'Paquete contratado' : 'Cita agendada'}: ${servicioSelect} (${numPerros} perros) - ${detalleFechaTexto}.`
+            });
+
+            try {
+                await updateDoc(doc(db, "perritos", perroEncontrado.id), {
+                    ultimaReserva: perroEncontrado.ultimaReserva,
+                    citas: perroEncontrado.citas,
+                    reportes: perroEncontrado.reportes
                 });
-
-                try {
-                    await updateDoc(doc(db, "perritos", perroEncontrado.id), {
-                        ultimaReserva: perroEncontrado.ultimaReserva,
-                        citas: perroEncontrado.citas,
-                        reportes: perroEncontrado.reportes
-                    });
-                } catch (error) {
-                    console.error("Error al guardar reserva en Firebase:", error);
-                }
+            } catch (error) {
+                console.error("Error al guardar reserva en Firebase:", error);
             }
+        }
 
-            const mensajeWp = `¡Hola Dog's Step's! 🐾 Tengo una nueva reserva de espacio:\n\n👤 *Dueño:* ${dueno} (${familia})\n📱 *Teléfono:* ${telDueno}\n🐕 *Perrito:* ${perroNombre}\n📋 *Servicio:* ${servicioSelect}\n🐶 *Perritos:* ${numPerros}\n📅 *Fecha:* ${fechaFormateada}`;
-            const urlWp = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${encodeURIComponent(mensajeWp)}`;
+        const mensajeWp = `¡Hola Dog's Step's! 🐾 Tengo una nueva reserva/contratación:\n\n👤 *Dueño:* ${dueno} (${familia})\n📱 *Teléfono:* ${telDueno}\n🐕 *Perrito:* ${perroNombre}\n📋 *Servicio:* ${servicioSelect}\n🐶 *Perritos:* ${numPerros}\n📅 *Detalle:* ${detalleFechaTexto}`;
+        const urlWp = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${encodeURIComponent(mensajeWp)}`;
 
-            formReserva.reset();
-            cargarPerritosDeNube();
+        formReserva.reset();
+        contenedorPaqueteDias.style.display = 'none';
+        contenedorFechaUnica.style.display = 'block';
+        cargarPerritosDeNube();
 
-            if (confirm(`¡Cita agendada y guardada en la nube para ${perroNombre} (${familia})! 🐾\n\n¿Deseas notificar inmediatamente a tu WhatsApp que hay un nuevo cupo reservado?`)) {
-                window.location.href = urlWp;
-            } else {
-                alert(`¡Cita agendada correctamente en el sistema!`);
-            }
+        if (confirm(`¡Reserva guardada con éxito para ${perroNombre} (${familia})! 🐾\n\n¿Deseas enviar la notificación a tu WhatsApp?`)) {
+            window.location.href = urlWp;
+        } else {
+            alert(`¡Guardado correctamente en el sistema!`);
         }
     });
 
