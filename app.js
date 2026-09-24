@@ -62,12 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputPaqueteDias = document.getElementById('paquete-dias');
     const inputPaqueteHora = document.getElementById('paquete-hora');
     const opcionOferta = document.getElementById('opcion-oferta');
+    const inputUrlMapa = document.getElementById('url-mapa');
 
     const inputPinCliente = document.getElementById('input-pin-cliente');
     const btnEntrarPin = document.getElementById('btn-entrar-pin');
     const btnWhatsappPago = document.getElementById('btn-whatsapp-pago');
 
-    // CONTROL DE PESTAÑAS (TABS)
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
@@ -100,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // BOTÓN DE CONFIRMACIÓN DE PAGO POR WHATSAPP
     btnWhatsappPago.addEventListener('click', () => {
         const msg = `¡Hola Dog's Step's! 🐾 Acabo de realizar mi transferencia por Bancoagrícola. Aquí te adjunto el comprobante de pago 🧾👇`;
         window.open(`https://wa.me/${TU_NUMERO_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -134,7 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cargarPerritosDeNube().then(() => actualizarPanelAdmin());
     }
 
-    // ACCESO CON PIN PARA CLIENTES
     btnEntrarPin.addEventListener('click', () => {
         const pinIngresado = inputPinCliente.value.trim();
         if (!pinIngresado) {
@@ -220,7 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     selectPerritoReserva.addEventListener('change', verificarOfertaPrimerPaseo);
 
-    // CALCULADORA DINÁMICA DE PRECIO EN TIEMPO REAL
     function calcularPrecioDinamico() {
         const servicioVal = selectServicio.value;
         const numP = parseInt(selectNumPerros.value || "1");
@@ -262,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     selectNumPerros.addEventListener('change', calcularPrecioDinamico);
 
-    // PERFIL INDIVIDUAL CON ESTADO VACÍO INTERACTIVO (CALL TO ACTION)
     function abrirPerfilIndividual(p) {
         vistaInicio.style.display = 'none';
         vistaPerfil.style.display = 'block';
@@ -271,6 +267,24 @@ document.addEventListener('DOMContentLoaded', () => {
         let avatarGrandeHtml = p.fotoPerfil ? 
             `<img src="${p.fotoPerfil}" class="avatar-perfil-grande">` : 
             `<div style="font-size: 3.5rem; background: #faf6f0; width: 90px; height: 90px; line-height: 90px; border-radius: 50%; margin: 0 auto 0.5rem auto; border: 3px solid #4a3319; text-align: center;">🐕</div>`;
+
+        let resumenPaqueteHtml = '';
+        if (p.paqueteActivo && p.paqueteActivo.totalPaseos) {
+            const consumidos = p.paqueteActivo.paseosConsumidos || 0;
+            const totales = p.paqueteActivo.totalPaseos;
+            const restantes = Math.max(0, totales - consumidos);
+            const porcentaje = (consumidos / totales) * 100;
+
+            resumenPaqueteHtml = `
+                <div style="background: #e8f5e9; border: 1px solid #a5d6a7; padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <p style="margin: 0 0 0.3rem 0; color: #2e7d32; font-weight: bold;">📦 ${p.paqueteActivo.nombreServicio}</p>
+                    <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #333;">Te quedan <strong>${restantes} de ${totales} paseos</strong> disponibles.</p>
+                    <div style="background: #c8e6c9; border-radius: 4px; height: 8px; width: 100%; overflow: hidden;">
+                        <div style="background: #2e7d32; height: 100%; width: ${porcentaje}%;"></div>
+                    </div>
+                </div>
+            `;
+        }
 
         let citasProximasHtml = '';
         let historialCitasHtml = '';
@@ -290,7 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Estado vacío cálido e interactivo
         if (!citasProximasHtml) {
             citasProximasHtml = `
                 <div style="text-align: center; padding: 1.5rem; background: #faf6f0; border-radius: 8px; border: 1px dashed #d4c3b3;">
@@ -304,11 +317,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!historialCitasHtml) historialCitasHtml = '<p style="color: #776050; font-size: 0.9rem;">No hay historial de citas anteriores.</p>';
 
         if (p.reportes && p.reportes.length > 0) {
-            reportesHtml = p.reportes.map(r => `
-                <div class="reporte-item" style="background: #fff; padding: 0.7rem; border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid #d4c3b3;">
-                    📝 ${r.texto}
-                </div>
-            `).join('');
+            reportesHtml = p.reportes.map(r => {
+                let mapaBtn = '';
+                if (r.urlMapa) {
+                    mapaBtn = `<br><a href="${r.urlMapa}" target="_blank" class="btn-secundario" style="display: inline-block; margin-top: 0.4rem; background: #2b6cb0; color: white; padding: 0.3rem 0.6rem; font-size: 0.8rem; text-decoration: none; border-radius: 4px;">🗺️ Ver Ruta en el Mapa</a>`;
+                }
+                return `
+                    <div class="reporte-item" style="background: #fff; padding: 0.7rem; border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid #d4c3b3;">
+                        📝 ${r.texto}
+                        ${mapaBtn}
+                    </div>
+                `;
+            }).join('');
         } else {
             reportesHtml = '<p style="color: #776050; font-size: 0.9rem;">Aún no hay reportes registrados.</p>';
         }
@@ -319,6 +339,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h2 style="margin: 0.5rem 0 0 0; color: #4a3319;">${p.nombre}</h2>
                 <p style="margin: 0; color: #8c6d53; font-weight: bold;">${p.familia} • ${p.raza} (${p.edad})</p>
             </div>
+            
+            ${resumenPaqueteHtml}
+
             <div style="background: #faf6f0; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                 <p style="margin: 0.3rem 0;">👤 <strong>Dueño:</strong> ${p.nombreDueno || 'No especificado'}</p>
                 <p style="margin: 0.3rem 0;">📱 <strong>WhatsApp:</strong> ${p.telefonoDueno || 'No especificado'}</p>
@@ -332,15 +355,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-top: 1.2rem;">📋 Historial de Citas Pasadas</h3>
             <div style="margin-top: 0.5rem; margin-bottom: 1rem;">${historialCitasHtml}</div>
 
-            <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-top: 1.2rem;">📸 Bitácora de Reportes</h3>
+            <h3 style="color: #4a3319; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; margin-top: 1.2rem;">📸 Bitácora de Reportes y Rutas</h3>
             <div style="margin-top: 0.5rem;">${reportesHtml}</div>
         `;
 
-        // Enlace del botón interactivo del estado vacío para saltar a agendar seleccionando al perrito
         const btnAgendarPerfil = document.getElementById('btn-ir-agendar-perfil');
         if (btnAgendarPerfil) {
             btnAgendarPerfil.addEventListener('click', () => {
-                // Activar pestaña de agendar
                 tabButtons.forEach(b => {
                     b.style.color = '#776050';
                     b.style.borderBottom = 'none';
@@ -385,7 +406,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 notas: document.getElementById('c-notas').value,
                 fotoPerfil: urlFotoPerfil,
                 citas: [],
-                reportes: [{ texto: `¡Perfil de ${nombreIngresado} registrado con éxito en ${familiaIngresada}! 🎉` }],
+                reportes: [{ texto: `¡Perfil de ${nombreIngresado} registrado con éxito en ${familiaIngresada}! 🎉`, urlMapa: null }],
+                paqueteActivo: null,
                 ultimaReserva: null
             };
 
@@ -471,11 +493,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     try {
                         await updateDoc(doc(db, "perritos", p.id), {
                             citas: [],
+                            paqueteActivo: null,
                             ultimaReserva: null
                         });
                         await cargarPerritosDeNube();
                         actualizarPanelAdmin();
-                        alert(`¡Citas canceladas con éxito para ${p.nombre}! El cupo ha quedado libre.`);
+                        alert(`¡Citas y paquete cancelados con éxito para ${p.nombre}!`);
                     } catch (error) {
                         console.error("Error al cancelar citas:", error);
                     }
@@ -563,7 +586,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if(perroEncontrado) {
             if (!perroEncontrado.reportes) perroEncontrado.reportes = [];
             perroEncontrado.reportes.push({
-                texto: `🧾 Factura enviada: ${servicioSelect} (${numPerros} perros) - Total: $${totalPagar}.`
+                texto: `🧾 Factura enviada: ${servicioSelect} (${numPerros} perros) - Total: $${totalPagar}.`,
+                urlMapa: null
             });
             updateDoc(doc(db, "perritos", perroEncontrado.id), { reportes: perroEncontrado.reportes });
         }
@@ -578,24 +602,38 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const nombrePerro = selectPerritoReporte.value;
         const texto = document.getElementById('texto-reporte').value;
+        const urlMapa = inputUrlMapa.value.trim();
         const fechaHoraActual = new Date().toLocaleString('es-SV', { dateStyle: 'short', timeStyle: 'short' });
 
         const perroEncontrado = perritos.find(p => p.nombre === nombrePerro);
         if (perroEncontrado) {
-            const textoCompleto = `[${fechaHoraActual}] 📸 Reporte de ${nombrePerro}: ${texto}\n\n(Foto adjunta del paseo 📸👇)`;
+            let textoCompleto = `[${fechaHoraActual}] 📸 Reporte de ${nombrePerro}: ${texto}\n\n(Foto adjunta del paseo 📸👇)`;
+            if (urlMapa) {
+                textoCompleto += `\n🗺️ Ruta del recorrido: ${urlMapa}`;
+            }
             
             if (!perroEncontrado.reportes) perroEncontrado.reportes = [];
-            perroEncontrado.reportes.push({ texto: textoCompleto });
+            perroEncontrado.reportes.push({ 
+                texto: textoCompleto, 
+                urlMapa: urlMapa || null 
+            });
+
+            let datosActualizar = { reportes: perroEncontrado.reportes };
+            if (perroEncontrado.paqueteActivo && perroEncontrado.paqueteActivo.totalPaseos) {
+                let consumidosActuales = perroEncontrado.paqueteActivo.paseosConsumidos || 0;
+                if (consumidosActuales < perroEncontrado.paqueteActivo.totalPaseos) {
+                    perroEncontrado.paqueteActivo.paseosConsumidos = consumidosActuales + 1;
+                    datosActualizar.paqueteActivo = perroEncontrado.paqueteActivo;
+                }
+            }
 
             try {
-                await updateDoc(doc(db, "perritos", perroEncontrado.id), {
-                    reportes: perroEncontrado.reportes
-                });
+                await updateDoc(doc(db, "perritos", perroEncontrado.id), datosActualizar);
 
                 const telDueno = perroEncontrado.telefonoDueno || TU_NUMERO_WHATSAPP;
                 const urlWp = `https://wa.me/${telDueno}?text=${encodeURIComponent(textoCompleto)}`;
 
-                alert(`✅ ¡Reporte guardado! Se abrirá WhatsApp para que adjuntes la foto.`);
+                alert(`✅ ¡Reporte y ruta guardados! Se ha descontado 1 paseo del paquete y se abrirá WhatsApp.`);
                 window.open(urlWp, '_blank');
                 formNuevoReporte.reset();
                 mostrarInicio();
@@ -614,9 +652,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const opcionSeleccionada = selectServicio.options[selectServicio.selectedIndex];
         const esPaquete = opcionSeleccionada.dataset.esPaquete === "true";
+        const totalPaseosPaquete = parseInt(opcionSeleccionada.dataset.totalPaseos || "0");
 
         let detalleFechaTexto = "";
         let fechaOriginalGuardar = "";
+        let nuevoPaqueteActivo = null;
 
         if (esPaquete) {
             const diasTxt = inputPaqueteDias.value.trim();
@@ -627,6 +667,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             detalleFechaTexto = `📦 Paquete - Días: ${diasTxt} a las ${horaTxt}`;
             fechaOriginalGuardar = new Date().toISOString();
+
+            nuevoPaqueteActivo = {
+                nombreServicio: servicioSelect,
+                totalPaseos: totalPaseosPaquete,
+                paseosConsumidos: 0
+            };
         } else {
             const fecha = inputFecha.value;
             if (!fecha) {
@@ -659,17 +705,27 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!perroEncontrado.citas) perroEncontrado.citas = [];
             perroEncontrado.citas.push(nuevaCita);
 
+            if (esPaquete) {
+                perroEncontrado.paqueteActivo = nuevoPaqueteActivo;
+            }
+
             if (!perroEncontrado.reportes) perroEncontrado.reportes = [];
             perroEncontrado.reportes.push({
-                texto: `📅 ${esPaquete ? 'Paquete contratado' : 'Cita agendada'}: ${servicioSelect} (${numPerros} perros) - ${detalleFechaTexto}.`
+                texto: `📅 ${esPaquete ? 'Paquete contratado' : 'Cita agendada'}: ${servicioSelect} (${numPerros} perros) - ${detalleFechaTexto}.`,
+                urlMapa: null
             });
 
             try {
-                await updateDoc(doc(db, "perritos", perroEncontrado.id), {
+                let objetoGuardar = {
                     ultimaReserva: perroEncontrado.ultimaReserva,
                     citas: perroEncontrado.citas,
                     reportes: perroEncontrado.reportes
-                });
+                };
+                if (esPaquete) {
+                    objetoGuardar.paqueteActivo = perroEncontrado.paqueteActivo;
+                }
+
+                await updateDoc(doc(db, "perritos", perroEncontrado.id), objetoGuardar);
             } catch (error) {
                 console.error("Error al guardar reserva en Firebase:", error);
             }
