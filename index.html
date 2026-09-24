@@ -197,12 +197,16 @@
                     <label for="admin-tel-cliente">WhatsApp del Dueño:</label>
                     <input type="text" id="admin-tel-cliente" readonly style="background: #eee; margin-bottom: 0.8rem; font-weight: bold;">
 
+                    <!-- Factura Automática / Respuesta Predeterminada -->
                     <div style="background: #fff; padding: 0.8rem; border-radius: 6px; border: 1px solid #d4c3b3; margin-bottom: 1rem;">
-                        <h4 style="margin: 0 0 0.5rem 0; color: #4a3319; font-size: 0.95rem;">🧾 Factura Automática de la Reserva</h4>
+                        <h4 style="margin: 0 0 0.5rem 0; color: #4a3319; font-size: 0.95rem;">🧾 Recibo y Respuesta Automática</h4>
                         <div id="info-ultima-reserva" style="font-size: 0.85rem; color: #5c4033; margin-bottom: 0.6rem; background: #fdfbf7; padding: 0.5rem; border-radius: 4px;">
                             Selecciona un perrito para ver su última reserva...
                         </div>
-                        <button type="button" id="btn-enviar-factura-auto" style="background-color: #276749; margin-top: 0; font-size: 0.9rem;">📤 Enviar Recibo Automático por WhatsApp</button>
+                        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                            <button type="button" id="btn-responder-reserva" style="background-color: #2b6cb0; margin-top: 0; font-size: 0.9rem;">💬 Enviar Respuesta de Confirmación al Cliente</button>
+                            <button type="button" id="btn-enviar-factura-auto" style="background-color: #276749; margin-top: 0; font-size: 0.9rem;">📤 Enviar Recibo de Pago por WhatsApp</button>
+                        </div>
                     </div>
 
                     <div style="display: flex; gap: 0.5rem;">
